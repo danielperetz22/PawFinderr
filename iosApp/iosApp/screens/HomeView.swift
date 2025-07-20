@@ -5,23 +5,23 @@ struct HomeView: View {
         ZStack {
             Color("BackgroundGray")
                 .ignoresSafeArea()
-
-            VStack(spacing: 32) {
+            
+            VStack(spacing: 24) {
                 Image("logo")
                     .renderingMode(.original)
                     .resizable()
                     .scaledToFit()
-                    .frame(height: 100)
-
-                VStack(spacing: 8) {
+                    .frame(height: 165)
+                    .padding(.top, 100)
+                
+                VStack(spacing: 2) {
                     Text("welcome to PawFinder")
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(.black)
-                    Text("help fins lost dogs quickly!")
-                        .font(.system(size: 16))
-                        .foregroundColor(.gray)
-                }
+                        .font(.custom("BalooBhaijaan2-Bold", size: 22))
 
+                    Text("help fins lost dogs quickly!")
+                        .font(.custom("BalooBhaijaan2-SemiBold", size: 22))
+                }
+                
                 VStack(alignment: .leading, spacing: 24) {
                     ForEach([
                         ("Quick Reports", "File a report in seconds"),
@@ -30,40 +30,49 @@ struct HomeView: View {
                     ], id: \.0) { title, subtitle in
                         HStack(spacing: 16) {
                             Circle()
-                                .fill(Color("CircleBackground"))
-                                .frame(width: 24, height: 24)
+                                .fill(Color.lightGreen)
+                                .frame(width: 30, height: 30)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(title)
-                                    .font(.system(size: 18, weight: .semibold))
+                                    .font(.custom("BalooBhaijaan2-Medium", size: 16))
                                     .foregroundColor(.black)
                                 Text(subtitle)
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.gray)
+                                    .font(.custom("BalooBhaijaan2-Medium", size: 14))
+                                    .foregroundColor(.black)
                             }
                         }
                     }
                 }
-
+                
                 Spacer()
+                
+                VStack(spacing: 16) {
+                    NavigationLink(destination: RegisterView()) {
+                        Text("get started")
+                            .font(.custom("BalooBhaijaan2-Bold", size: 16))
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                            .background(Color.primaryPink)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                    }
+                    
+                    NavigationLink(destination: LoginView()) {
+                        Text("log in")
+                            .font(.custom("BalooBhaijaan2-Bold", size: 16))
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.white.opacity(0.3))
 
-                               VStack(spacing: 16) {
-                                   NavigationLink("get started", destination: RegisterView())
-                                       .frame(maxWidth: .infinity, minHeight: 48)
-                                       .background(Color.pink)
-                                       .foregroundColor(.white)
-                                       .cornerRadius(24)
-
-                                   NavigationLink("log in", destination: LoginView())
-                                       .frame(maxWidth: .infinity, minHeight: 48)
-                                       .overlay(
-                                           RoundedRectangle(cornerRadius: 24)
-                                            .stroke(Color.pink, lineWidth: 2)
-                                       )
-                                       .foregroundColor(Color.pink)
-                               }
-                           }
-                           .padding(24)
-                           .frame(maxWidth: .infinity, maxHeight: .infinity)
-                       }
-                   }
-               }
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.white, lineWidth: 2)
+                            )
+                            .foregroundColor(.primaryPink)
+                    }
+                }
+                .padding(32)
+            }
+        }
+    }}
