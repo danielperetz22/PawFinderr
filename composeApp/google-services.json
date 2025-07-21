@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "150440973925",
+    "project_id": "pawfinder-83bc2",
+    "storage_bucket": "pawfinder-83bc2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:150440973925:android:505360176754fa6186988c",
+        "android_client_info": {
+          "package_name": "org.example.project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBUN4Gzan-SYBQngSK6B77JFjC7axJoQY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
