@@ -23,6 +23,7 @@ androidx-glance = "X.Y.Z"
 lifecycleViewmodelCompose = "2.6.1"
 navigationCompose = "2.5.3"
 
+
 [libraries]
 activity-compose = { module = "androidx.activity:activity-compose" }
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
