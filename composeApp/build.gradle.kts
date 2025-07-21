@@ -24,6 +24,8 @@ kotlin {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+            implementation(project.dependencies.platform(libs.firebase.bom.v33140))
+
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -82,7 +84,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
-
+    implementation(libs.coil.compose)
+    implementation(platform(libs.firebase.bom.v33140))
+    implementation(libs.firebase.common.ktx)
 }
 
