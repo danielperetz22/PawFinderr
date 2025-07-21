@@ -1,69 +1,72 @@
 import SwiftUI
 
 struct LoginView: View {
-    @State private var email = ""
+    @State private var email    = ""
     @State private var password = ""
 
     var body: some View {
-        ZStack {
-            Color.white
-                .ignoresSafeArea()
+        NavigationStack {
+            ZStack {
+                Color("BackgroundGray")
+                    .ignoresSafeArea()
 
-            VStack(spacing: 24) {
-                // כותרת בכחול
-                Text("welcome back!")
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(Color.blue)
+                VStack {
+                    VStack(spacing: 128) {
+                        Text("welcome back!")
+                            .font(.custom("BalooBhaijaan2-ExtraBold", size: 32))
+                            .foregroundColor(Color.darkGreen)
 
-                // שדות עם מסגרת כחולה
-                VStack(spacing: 16) {
-                    TextField("enter email", text: $email)
-                        .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
-                        .padding()
-                        .background(Color.white)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.blue, lineWidth: 1)
-                        )
+                        VStack(spacing: 16) {
+                            FloatingLabelTextField(
+                                text: $email,
+                                label: "email",
+                                placeholder: "enter email"
+                            )
+                            .keyboardType(.emailAddress)
+                            .autocapitalization(.none)
 
-                    SecureField("enter password", text: $password)
-                        .padding()
-                        .background(Color.white)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.blue, lineWidth: 1)
-                        )
+                            FloatingLabelSecureField(
+                                text: $password,
+                                label: "password",
+                                placeholder: "enter password"
+                            )
+                        }
+                    }
+                    .padding(.top, 80)
+
+                    Spacer()
+
+                    VStack(spacing: 8) {
+                        Button {
+                            // login action
+                        } label: {
+                            Text("log in")
+                                .font(.custom("BalooBhaijaan2-Bold", size: 16))
+                                .frame(maxWidth: .infinity, minHeight: 44)
+                                .background(Color.primaryPink)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                        }
+
+                        HStack {
+                            Text("Don't have an account?")
+                                .font(.custom("BalooBhaijaan2-Regular", size: 16))
+                            NavigationLink("Sign up", destination: RegisterView())
+                                .font(.custom("BalooBhaijaan2-ExtraBold", size: 16))
+                                .foregroundColor(Color.black)
+                        }
+                    }
+                    .padding(.bottom, 40)
                 }
-
-                // כפתור ורוד
-                Button("log in") {
-                    // פעולה
-                }
-                .frame(maxWidth: .infinity, minHeight: 48)
-                .background(Color.pink)
-                .foregroundColor(.white)
-                .cornerRadius(24)
-
-                // כאן, אם תרצי, תוסיפי טקסט קישור
-                HStack {
-                    Text("Don't have an account?")
-                        .foregroundColor(.gray)
-                    NavigationLink("Sign up", destination: RegisterView())
-                        .foregroundColor(Color.pink)
-                        .bold()
-                }
+                .padding(.horizontal, 24)
+                .frame(maxHeight: .infinity)
             }
-            .padding(24)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 }
 
 struct LoginView_Previews: PreviewProvider {
     static var previews: some View {
-        NavigationStack {
-            LoginView()
-        }
+        LoginView()
     }
 }
