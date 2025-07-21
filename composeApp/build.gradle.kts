@@ -86,5 +86,8 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(platform(libs.firebase.bom.v33140))
     implementation(libs.firebase.common.ktx)
+    implementation(libs.firebase.common)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
 }
 
