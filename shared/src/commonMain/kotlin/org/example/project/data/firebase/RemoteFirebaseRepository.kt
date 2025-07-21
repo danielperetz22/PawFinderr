@@ -8,11 +8,6 @@ import dev.gitlive.firebase.initialize
 
 class RemoteFirebaseRepository : FirebaseRepository {
 
-    init {
-        // וודאי שקראת ל־initialize פעם אחת בהנעת האפליקציה
-        Firebase.initialize()
-    }
-
     override suspend fun signUp(email: String, password: String) {
         // יוצר חשבון חדש ב‑Firebase Auth
         Firebase.auth.createUserWithEmailAndPassword(email, password)

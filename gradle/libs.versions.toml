@@ -20,6 +20,8 @@ firebaseBomVersion = "33.14.0"
 firebaseCommon = "2.1.0"
 firebaseCommonKtx = "21.0.0"
 firebaseFirestore = "2.1.0"
+googleFirebaseBom = "31.2.0"
+googleServices = "4.3.15"
 junit = "4.13.2"
 kotlin = "2.2.0"
 androidx-glance = "X.Y.Z"
@@ -41,11 +43,13 @@ coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version
 firebase-auth = { module = "dev.gitlive:firebase-auth", version.ref = "firebaseAuth" }
 firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-bom-v3120 = { module = "com.google.firebase:firebase-bom", version.ref = "googleFirebaseBom" }
 firebase-bom-v33140 = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBomVersion" }
 firebase-common = { module = "dev.gitlive:firebase-common", version.ref = "firebaseCommon" }
 firebase-common-ktx = { module = "com.google.firebase:firebase-common-ktx", version.ref = "firebaseCommonKtx" }
 firebase-firestore = { module = "dev.gitlive:firebase-firestore", version.ref = "firebaseFirestore" }
 firebase-firestore-ktx = { module = "com.google.firebase:firebase-firestore-ktx" }
+google-services = { module = "com.google.gms:google-services", version.ref = "googleServices" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }
