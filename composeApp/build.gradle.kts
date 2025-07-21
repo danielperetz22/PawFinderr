@@ -7,15 +7,23 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    id("com.google.gms.google-services")
+
 
 
 }
 
+
+}
+buildscript {
+    repositories { google(); mavenCentral() }
+    dependencies { classpath(libs.google.services) }
+}
 kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
     
@@ -28,6 +36,9 @@ kotlin {
 
         }
         commonMain.dependencies {
+            implementation("dev.gitlive:firebase-app:2.1.0")
+            implementation("dev.gitlive:firebase-auth:2.1.0")
+            implementation("dev.gitlive:firebase-firestore:2.1.0")
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
@@ -37,6 +48,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(projects.shared)
+
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -66,8 +78,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
@@ -87,5 +99,9 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(platform(libs.firebase.bom.v33140))
     implementation(libs.firebase.common.ktx)
+    implementation(libs.firebase.common)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+
 }
 

@@ -4,16 +4,21 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
-import androidx.navigation.NavType
-import androidx.navigation.compose.*
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.google.firebase.FirebaseApp
-import org.example.project.ui.home.*
+import dev.gitlive.firebase.Firebase
+import org.example.project.ui.home.HomeScreen
+import org.example.project.ui.home.LoginScreen
+import org.example.project.ui.home.RegisterScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         FirebaseApp.initializeApp(this)
+
 
         setContent {
             MaterialTheme {
@@ -30,7 +35,7 @@ class MainActivity : ComponentActivity() {
                     composable("login") {
                         LoginScreen(
                             onLogin = { email, pwd ->
-                                // TODO: call your ViewModel / auth logic
+                                // TODO: viewModel.signIn(email, pwd)
                             },
                             onNavigateToRegister = {
                                 navController.navigate("register")
@@ -40,11 +45,13 @@ class MainActivity : ComponentActivity() {
 
                     composable("register") {
                         RegisterScreen(
-                            onRegister = { email, pwd ->
-                                // TODO: register then nav back or to main content
-                            },
-                            onNavigateToLogin = {
+                            onNavigateToLogin  = {
                                 navController.popBackStack("login", inclusive = false)
+                            },
+                            onRegisterSuccess  = {
+                                navController.navigate("home") {
+                                    popUpTo("home") { inclusive = true }
+                                }
                             }
                         )
                     }
