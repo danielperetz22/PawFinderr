@@ -13,7 +13,7 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -24,10 +24,16 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     sourceSets {
+        androidMain.dependencies {
+
+        }
         commonMain.dependencies {
-            // put your Multiplatform dependencies here
+            implementation(project.dependencies.platform(libs.firebase.bom))
+            implementation("dev.gitlive:firebase-firestore:2.1.0")
+            implementation("dev.gitlive:firebase-common:2.1.0")
+            implementation("dev.gitlive:firebase-auth:2.1.0")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
