@@ -1,4 +1,7 @@
 import SwiftUI
+import FirebaseAuth
+import FirebaseFirestore
+
 
 struct FloatingLabelTextField: View {
     @Binding var text: String
@@ -106,6 +109,26 @@ struct RegisterView: View {
                     VStack(spacing: 8) {
                         
                         Button {
+                            Task {
+                                do {
+                                    // 1. יוצרים משתמש ב‑FirebaseAuth
+                                    let result = try await Auth.auth()
+                                        .createUser(withEmail: email, password: password)
+                                    let user = result.user
+                                    // 2. (אופציונלי) שומרים פרופיל בפיירסטור
+                                    let db = Firestore.firestore()
+                                    try await db.collection("users")
+                                        .document(user.uid)
+                                        .setData([
+                                            "uid": user.uid,
+                                            "email": user.email ?? email
+                                        ])
+                                    // 3. יוזמים ניווט ל‑Home (למשל באמצעות @EnvironmentObject או State)
+                                    print("🙌 registered:", user.uid)
+                                } catch {
+                                    print("❌ registration error:", error.localizedDescription)
+                                }
+                            }
                         } label: {
                             Text("Register")
                                 .font(.custom("BalooBhaijaan2-Bold", size: 16))
