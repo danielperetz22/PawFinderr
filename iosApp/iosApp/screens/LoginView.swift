@@ -1,4 +1,7 @@
 import SwiftUI
+import FirebaseAuth
+import FirebaseFirestore
+
 
 struct LoginView: View {
     @State private var email    = ""
@@ -38,7 +41,18 @@ struct LoginView: View {
 
                     VStack(spacing: 8) {
                         Button {
-                            // login action
+                            Task {
+                                do {
+                                    // 1. מחוברים עם מייל וסיסמה
+                                    let result = try await Auth.auth()
+                                        .signIn(withEmail: email, password: password)
+                                    let user = result.user
+                                    print("✅ logged in:", user.uid)
+                                    // כאן אפשר להתריע ל‑ViewModel או לשמור ב‑@AppStorage
+                                } catch {
+                                    print("❌ login error:", error.localizedDescription)
+                                }
+                            }
                         } label: {
                             Text("log in")
                                 .font(.custom("BalooBhaijaan2-Bold", size: 16))
