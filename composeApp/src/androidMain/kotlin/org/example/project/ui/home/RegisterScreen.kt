@@ -120,7 +120,9 @@ fun RegisterScreen(
                 text = "Sign in",
                 fontFamily = balooBhaijaan2Family,
                 fontWeight = FontWeight.ExtraBold,
-                modifier = Modifier.clickable { onNavigateToLogin() }
+                color = Color.Black,
+                modifier = Modifier.clickable { onNavigateToLogin()
+                } .padding(0.dp)
             )
         }
     }

@@ -105,15 +105,16 @@ fun LoginScreen(
             Text("Don’t have an account?",
                 fontFamily = balooBhaijaan2Family,
                 fontWeight = FontWeight.Normal,
-                fontSize = 14.sp,
             )
             Spacer(Modifier.width(4.dp))
             Text(
                 text = "Sign up",
                 fontFamily = balooBhaijaan2Family,
                 fontWeight = FontWeight.ExtraBold,
-                fontSize = 14.sp,
-                modifier = Modifier.clickable { onNavigateToRegister() }
+                color = Color.Black,
+                modifier = Modifier
+                    .clickable { onNavigateToRegister() }
+                    .padding(0.dp)
             )
         }
     }
