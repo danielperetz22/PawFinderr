@@ -16,6 +16,7 @@ import org.example.project.ui.home.HomeScreen
 import org.example.project.ui.home.LoginScreen
 import org.example.project.ui.home.RegisterScreen
 import androidx.lifecycle.viewmodel.compose.viewModel
+import org.example.project.ui.feed.FeedScreen
 import org.example.project.ui.home.AndroidUserViewModel
 
 
@@ -42,33 +43,64 @@ class MainActivity : ComponentActivity() {
                     // 2) login
                     composable("login") {
                         val vm: AndroidUserViewModel = viewModel()
+                        val currentUid   by vm.currentUid.collectAsState()
+                        val isLoading    by vm.isLoading.collectAsState()
+                        val errorMessage by vm.errorMessage.collectAsState()
 
                         LoginScreen(
+                            isLoading           = isLoading,
+                            errorMessage        = errorMessage,
                             onLogin = { email, pwd ->
                                 vm.signIn(email, pwd)
-                                navController.navigate("home") {
-                                    popUpTo("home") { inclusive = true }
-                                }
                             },
                             onNavigateToRegister = {
                                 navController.navigate("register")
                             }
                         )
+                        LaunchedEffect(currentUid) {
+                            if (currentUid != null) {
+                                navController.navigate("feed") {
+                                    popUpTo("home") { inclusive = true }
+                                }
+                                }
+                        }
+
                     }
 
                     // 3) register
                     composable("register") {
                         val vm: AndroidUserViewModel = viewModel()
+                        val currentUid   by vm.currentUid.collectAsState()
+                        val isLoading    by vm.isLoading.collectAsState()
+                        val errorMessage by vm.errorMessage.collectAsState()
 
                         RegisterScreen(
+                            isLoading = isLoading,
+                            errorMessage = errorMessage,
                             onRegister = { email, pwd ->
                                 vm.signUp(email, pwd)
-                                navController.navigate("home") {
-                                    popUpTo("home") { inclusive = true }
-                                }
                             },
                             onNavigateToLogin = {
                                 navController.popBackStack("login", inclusive = false)
+                            }
+                        )
+                        LaunchedEffect(currentUid) {
+                            if (currentUid != null) {
+                                navController.navigate("feed") {
+                                    popUpTo("home") { inclusive = true }
+                                }
+                            }
+                        }
+                    }
+                    // 4) feed
+                    composable("feed") {
+                        val vm: AndroidUserViewModel = viewModel()
+                        FeedScreen(
+                            onSignOut = {
+                                vm.signOut()
+                                navController.navigate("home") {
+                                    popUpTo("home") { inclusive = true }
+                                }
                             }
                         )
                     }
