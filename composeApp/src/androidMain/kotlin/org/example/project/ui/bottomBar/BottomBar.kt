@@ -53,7 +53,7 @@ fun BottomBar(navController: NavHostController) {
         containerColor = Color.White.copy(alpha = 0.3f),
         modifier = Modifier
             .fillMaxWidth()
-                .topBorder(width = 2.dp, color = Color(0xFF90D1D8))
+            .topBorder(width = 2.dp, color = Color(0xFF90D1D8))
     ) {
         items.forEach { item ->
             NavigationBarItem(

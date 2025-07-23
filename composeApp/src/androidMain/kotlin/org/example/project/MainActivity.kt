@@ -19,6 +19,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.FirebaseApp
 import dev.gitlive.firebase.Firebase
+import org.example.project.ui.bottomBar.AppTopBar
 import org.example.project.ui.bottomBar.BottomBar
 import org.example.project.ui.home.HomeScreen
 import org.example.project.ui.home.LoginScreen
@@ -41,6 +42,19 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
                     containerColor = Color.Transparent,
+                    topBar = {
+                        val backStackEntry by navController.currentBackStackEntryAsState()
+                        val currentRoute = backStackEntry?.destination?.route
+                        val titleText = currentRoute
+                            ?.replaceFirstChar { it.uppercaseChar() }
+                            ?: ""
+                        if (currentRoute in listOf("feed", "profile", "reports")) {
+                            AppTopBar(
+                                title= titleText,
+                                onBackClick = { navController.popBackStack() }
+                            )
+                        }
+                    },
                     bottomBar = {
                         val backStackEntry by navController.currentBackStackEntryAsState()
                         val route = backStackEntry?.destination?.route
