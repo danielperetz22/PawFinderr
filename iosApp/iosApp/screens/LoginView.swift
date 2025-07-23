@@ -47,10 +47,10 @@ struct LoginView: View {
                                     let result = try await Auth.auth()
                                         .signIn(withEmail: email, password: password)
                                     let user = result.user
-                                    print("✅ logged in:", user.uid)
+                                    print("logged in:", user.uid)
                                     // כאן אפשר להתריע ל‑ViewModel או לשמור ב‑@AppStorage
                                 } catch {
-                                    print("❌ login error:", error.localizedDescription)
+                                    print("login error:", error.localizedDescription)
                                 }
                             }
                         } label: {
