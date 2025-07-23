@@ -28,9 +28,13 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MaterialTheme {
+                val vm: AndroidUserViewModel = viewModel()
+                val currentUid by vm.currentUid.collectAsState()
+                val startDestination = if (currentUid != null) "feed" else "home"
+
                 val navController = rememberNavController()
 
-                NavHost(navController, startDestination = "home") {
+                NavHost(navController, startDestination = startDestination) {
 
                     // 1) home
                     composable("home") {
