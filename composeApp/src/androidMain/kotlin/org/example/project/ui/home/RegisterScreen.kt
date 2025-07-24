@@ -1,5 +1,6 @@
 package org.example.project.ui.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,9 +26,10 @@ private val balooBhaijaan2Family = FontFamily(
     Font(R.font.baloobhaijaan2_extrabold, FontWeight.ExtraBold)
 )
 
-@Preview(showBackground = true)
 @Composable
 fun RegisterScreen(
+    isLoading: Boolean,
+    errorMessage: String?,
     onRegister: (email: String, password: String) -> Unit={_, _ ->},
     onNavigateToLogin: () -> Unit={}
 ) {
@@ -35,19 +37,24 @@ fun RegisterScreen(
     var password by remember { mutableStateOf("") }
     var confirm by remember { mutableStateOf("") }
 
+    Box(Modifier.fillMaxSize()) {
+
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(color = Color(0xFFF0F0F0))
             .padding(24.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(Modifier.height(80.dp))
-        Text("join us!",
+        Text(
+            "join us!",
             color = Color(0xFFDA90D1D8),
             fontFamily = balooBhaijaan2Family,
             fontWeight = FontWeight.ExtraBold,
-            fontSize = 32.sp,)
+            fontSize = 32.sp,
+        )
 
         Spacer(Modifier.height(40.dp))
         Column(
@@ -89,6 +96,14 @@ fun RegisterScreen(
 
         Spacer(Modifier.height(32.dp))
 
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage,
+                color = Color.Red,
+                modifier = Modifier.padding(8.dp)
+            )
+        }
+
         Button(
             onClick = { if (password == confirm) onRegister(email, password) },
             modifier = Modifier
@@ -97,12 +112,15 @@ fun RegisterScreen(
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFFFFC0C0),
-                contentColor   = Color.White
-            )        ) {
-            Text("register",
+                contentColor = Color.White
+            )
+        ) {
+            Text(
+                "register",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                fontFamily = balooBhaijaan2Family)
+                fontFamily = balooBhaijaan2Family
+            )
         }
 
         Spacer(Modifier.height(12.dp))
@@ -112,15 +130,26 @@ fun RegisterScreen(
                 .padding(bottom = 32.dp),
             horizontalArrangement = Arrangement.Center
         ) {
-            Text("Already have an account?",
+            Text(
+                "Already have an account?",
                 fontFamily = balooBhaijaan2Family,
-                fontWeight = FontWeight.Normal,)
+                fontWeight = FontWeight.Normal,
+            )
             Spacer(Modifier.width(4.dp))
             Text(
                 text = "Sign in",
                 fontFamily = balooBhaijaan2Family,
                 fontWeight = FontWeight.ExtraBold,
-                modifier = Modifier.clickable { onNavigateToLogin() }
+                color = Color.Black,
+                modifier = Modifier.clickable {
+                    onNavigateToLogin()
+                }.padding(0.dp)
+            )
+        }
+    }
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center)
             )
         }
     }

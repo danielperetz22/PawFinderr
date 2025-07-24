@@ -7,8 +7,19 @@ struct LoginView: View {
     @State private var email    = ""
     @State private var password = ""
 
+    @State private var isLoggedIn = false
+
+
     var body: some View {
         NavigationStack {
+            NavigationLink(
+                            destination: FeedView(onSignOut: {
+                                // handle sign-out if needed
+                            }),
+                            isActive: $isLoggedIn
+                        ) {
+                            EmptyView()
+                        }
             ZStack {
                 Color("BackgroundGray")
                     .ignoresSafeArea()
@@ -48,6 +59,7 @@ struct LoginView: View {
                                         .signIn(withEmail: email, password: password)
                                     let user = result.user
                                     print("logged in:", user.uid)
+                                    isLoggedIn = true
                                     // כאן אפשר להתריע ל‑ViewModel או לשמור ב‑@AppStorage
                                 } catch {
                                     print("login error:", error.localizedDescription)
