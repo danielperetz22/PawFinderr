@@ -21,6 +21,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import org.example.project.R
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
+import android.content.ContentValues
+import android.net.Uri
+import android.provider.MediaStore
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
 
 private val balooBhaijaan2Family = FontFamily(
     Font(R.font.baloobhaijaan2_regular,   FontWeight.Normal),
@@ -33,10 +39,40 @@ private val balooBhaijaan2Family = FontFamily(
 @Preview(showBackground = true)
 @Composable
 fun NewReportScreen(
-    onAddPhoto: () -> Unit = {},
+    onImagePicked: (Uri) -> Unit = {},
     onAddLocation: () -> Unit = {},
     onPublish: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+    var showDialog by remember { mutableStateOf(false) }
+    var cameraUri by remember { mutableStateOf<Uri?>(null) }
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { onImagePicked(it) }
+    }
+
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success: Boolean ->
+        if (success) {
+            cameraUri
+                ?.let { onImagePicked(it) }       // ← אין פה smart cast, ו־it כבר non‑null
+        }
+    }
+
+
+    fun createImageUri(): Uri {
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, "IMG_${System.currentTimeMillis()}.jpg")
+            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+        }
+        return context.contentResolver
+            .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+            ?: throw IllegalStateException("Cannot create image uri")
+    }
     var isLost by remember { mutableStateOf(true) }
     var description by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
@@ -104,21 +140,42 @@ fun NewReportScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp)                                    // ← fixed shorter height
+                    .height(120.dp)
                     .background(Color(0xFFF0F0F0), RoundedCornerShape(8.dp))
                     .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
-                    .clickable(onClick = onAddPhoto),
+                    .clickable { showDialog = true },
                 contentAlignment = Alignment.BottomEnd
             ) {
                 Box(
                     modifier = Modifier
                         .padding(12.dp)
-                        .size(28.dp)                                     // ← smaller badge
+                        .size(28.dp)
                         .background(Color(0xFFF69092), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("+", color = Color.White, fontSize = 18.sp)   // ← slightly smaller “+”
+                    Text("+", color = Color.White, fontSize = 18.sp)
                 }
+            }
+
+            if (showDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDialog = false },
+                    title = { Text("בחר מקור תמונה") },
+                    text = { Text("צילום חדש או בחירה מהגלריה?") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            galleryLauncher.launch("image/*")
+                            showDialog = false
+                        }) { Text("גלריה") }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = {
+                            cameraUri = createImageUri()
+                            cameraLauncher.launch(cameraUri!!)
+                            showDialog = false
+                        }) { Text("מצלמה") }
+                    }
+                )
             }
 
 

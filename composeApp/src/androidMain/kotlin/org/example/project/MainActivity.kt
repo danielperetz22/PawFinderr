@@ -26,6 +26,7 @@ import org.example.project.ui.home.LoginScreen
 import org.example.project.ui.home.RegisterScreen
 import org.example.project.ui.home.AndroidUserViewModel
 import org.example.project.ui.feed.FeedScreen
+import org.example.project.ui.report.NewReportScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -142,7 +143,7 @@ class MainActivity : ComponentActivity() {
 
                         // 6) reports
                         composable("reports") {
-                            // MyReportsScreen(...)
+                            NewReportScreen()
                         }
                     }
                 }
