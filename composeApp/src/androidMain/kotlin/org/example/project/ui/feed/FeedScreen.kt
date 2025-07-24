@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun FeedScreen(
-    onSignOut: () -> Unit     // פרמטר לקריאה בהקלקה
+    onSignOut: () -> Unit
 ) {
     Box(
         modifier = Modifier

@@ -7,6 +7,7 @@ struct FloatingLabelTextField: View {
     @Binding var text: String
     let label: String
     let placeholder: String
+    
 
     var body: some View {
         ZStack(alignment: .leading) {
@@ -71,9 +72,15 @@ struct RegisterView: View {
     @State private var email           = ""
     @State private var password        = ""
     @State private var confirmPassword = ""
+    
+    @State private var didRegister = false
 
     var body: some View {
         NavigationStack {
+            NavigationLink(
+                destination: FeedView(onSignOut: { /* handle sign-out */ }) ,
+                isActive: $didRegister
+            ) {EmptyView()}
             ZStack {
                 Color("BackgroundGray")
                     .ignoresSafeArea()
@@ -125,6 +132,7 @@ struct RegisterView: View {
                                         ])
                                     // 3. יוזמים ניווט ל‑Home (למשל באמצעות @EnvironmentObject או State)
                                     print("🙌 registered:", user.uid)
+                                    didRegister = true
                                 } catch {
                                     print("❌ registration error:", error.localizedDescription)
                                 }
