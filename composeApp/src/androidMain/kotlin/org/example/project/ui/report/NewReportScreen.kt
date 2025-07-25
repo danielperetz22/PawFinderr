@@ -27,6 +27,10 @@ import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.Image
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import coil3.compose.rememberAsyncImagePainter
 
 private val balooBhaijaan2Family = FontFamily(
     Font(R.font.baloobhaijaan2_regular,   FontWeight.Normal),
@@ -46,33 +50,39 @@ fun NewReportScreen(
     val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
     var cameraUri by remember { mutableStateOf<Uri?>(null) }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let { onImagePicked(it) }
+        uri?.let {
+            selectedImageUri = it
+            onImagePicked(it)
+        }
     }
-
 
     val cameraLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.TakePicture()
     ) { success: Boolean ->
         if (success) {
-            cameraUri
-                ?.let { onImagePicked(it) }       // ← אין פה smart cast, ו־it כבר non‑null
+            cameraUri?.let {
+                selectedImageUri = it
+                onImagePicked(it)
+            }
         }
     }
 
-
     fun createImageUri(): Uri {
-        val contentValues = ContentValues().apply {
+        val values = ContentValues().apply {
             put(MediaStore.Images.Media.DISPLAY_NAME, "IMG_${System.currentTimeMillis()}.jpg")
             put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
         }
         return context.contentResolver
-            .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-            ?: throw IllegalStateException("Cannot create image uri")
+            .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+            ?: error("Couldn't create URI for camera image")
     }
+
+
     var isLost by remember { mutableStateOf(true) }
     var description by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
@@ -84,13 +94,13 @@ fun NewReportScreen(
             .fillMaxSize()
             .background(Color(0xFFF0F0F0))
             .padding(horizontal = 24.dp, vertical = 16.dp),
-        contentAlignment = Alignment.Center                                            // ← CENTER!
+        contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth(0.9f)                                                     // ← only 90% wide
-                .wrapContentHeight(),                                                   // ← height wraps content
-            horizontalAlignment = Alignment.CenterHorizontally                          // ← children centered
+                .fillMaxWidth(0.9f)
+                .wrapContentHeight(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // --- Lost / Found toggle ---
             Row(
@@ -136,16 +146,29 @@ fun NewReportScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // --- Photo placeholder with "+" ---
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp)
-                    .background(Color(0xFFF0F0F0), RoundedCornerShape(8.dp))
+                    .height(200.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFFF0F0F0))
                     .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
                     .clickable { showDialog = true },
                 contentAlignment = Alignment.BottomEnd
             ) {
+                // if we have a URI, show it via Coil…
+                selectedImageUri?.let { uri ->
+                    Image(
+                        painter = rememberAsyncImagePainter(uri),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+
+                // …and always overlay the "+" button in the corner
                 Box(
                     modifier = Modifier
                         .padding(12.dp)
@@ -157,31 +180,31 @@ fun NewReportScreen(
                 }
             }
 
+            // AlertDialog to choose camera vs gallery
             if (showDialog) {
                 AlertDialog(
                     onDismissRequest = { showDialog = false },
-                    title = { Text("בחר מקור תמונה") },
-                    text = { Text("צילום חדש או בחירה מהגלריה?") },
+                    title = { Text("Select an image source") },
+                    text = { Text("New photo or selection from the gallery?") },
                     confirmButton = {
                         TextButton(onClick = {
                             galleryLauncher.launch("image/*")
                             showDialog = false
-                        }) { Text("גלריה") }
+                        }) {
+                            Text("gallery")
+                        }
                     },
                     dismissButton = {
                         TextButton(onClick = {
                             cameraUri = createImageUri()
                             cameraLauncher.launch(cameraUri!!)
                             showDialog = false
-                        }) { Text("מצלמה") }
+                        }) {
+                            Text("photo")
+                        }
                     }
                 )
             }
-
-
-            Spacer(Modifier.height(12.dp))
-
-            // --- Photo placeholder with "+" ---
 
             Spacer(Modifier.height(16.dp))
 

@@ -104,10 +104,8 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.material3)
     implementation(libs.androidx.material)
+    implementation(libs.koin.core)
+    implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
-    implementation(libs.koin.androidx.compose.navigation)
-
-
-
 }
 

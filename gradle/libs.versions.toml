@@ -23,8 +23,9 @@ firebaseFirestore = "2.1.0"
 googleFirebaseBom = "31.2.0"
 googleServices = "4.3.15"
 junit = "4.13.2"
-koinAndroidxCompose = "4.1.0"
-koinAndroidxComposeNavigation = "4.1.0"
+koinAndroid = "4.0.4"
+koinAndroidxCompose = "4.0.4"
+koinCore = "4.0.4"
 kotlin = "2.2.0"
 androidx-glance = "X.Y.Z"
 lifecycleViewmodelCompose = "2.6.1"
@@ -56,8 +57,9 @@ firebase-common-ktx = { module = "com.google.firebase:firebase-common-ktx", vers
 firebase-firestore = { module = "dev.gitlive:firebase-firestore", version.ref = "firebaseFirestore" }
 firebase-firestore-ktx = { module = "com.google.firebase:firebase-firestore-ktx" }
 google-services = { module = "com.google.gms:google-services", version.ref = "googleServices" }
-koin-androidx-compose-navigation = { module = "io.insert-koin:koin-androidx-compose-navigation", version.ref = "koinAndroidxComposeNavigation" }
+koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinAndroid" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinAndroidxCompose" }
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koinCore" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { module = "junit:junit", version.ref = "junit" }
