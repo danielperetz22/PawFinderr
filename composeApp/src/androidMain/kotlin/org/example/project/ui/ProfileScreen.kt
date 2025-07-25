@@ -97,7 +97,7 @@ fun ProfileScreen(onSignOut: () -> Unit = {},
         ) {
             Button(
                 onClick = {
-                    vm.signOut() },
+                    onSignOut() },
                 enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFEB0B2)),
                 shape = RoundedCornerShape(8.dp)
