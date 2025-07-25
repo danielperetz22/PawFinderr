@@ -75,4 +75,18 @@ class UserViewModel(
             }
         }
     }
+
+    fun changePassword(newPassword: String) {
+        scope.launch {
+            _isLoading.value = true
+            _error.value     = null
+            try {
+                repo.updatePassword(newPassword)
+            } catch (e: Exception) {
+                _error.value = e.message
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
 }

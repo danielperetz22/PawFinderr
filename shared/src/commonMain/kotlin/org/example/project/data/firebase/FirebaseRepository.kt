@@ -6,6 +6,6 @@ interface FirebaseRepository {
     suspend fun saveUserProfile(uid: String, email: String)
     suspend fun signOut()
     fun currentUserEmail(): String?
-
+    suspend fun updatePassword(newPassword: String)
 }
 

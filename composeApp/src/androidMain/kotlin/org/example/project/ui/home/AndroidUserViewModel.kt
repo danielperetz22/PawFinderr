@@ -16,4 +16,5 @@ class AndroidUserViewModel : ViewModel() {
     fun signUp(email: String, pwd: String) = shared.signUp(email, pwd)
     fun signIn(email: String, pwd: String) = shared.signIn(email, pwd)
     fun signOut() = shared.signOut()
+    fun changePassword(newPassword: String) = shared.changePassword(newPassword)
 }

@@ -21,6 +21,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -61,6 +63,7 @@ fun ProfileScreen(onSignOut: () -> Unit = {},
     var isEditing by remember { mutableStateOf(false) }
     var newPassword by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var localError by remember { mutableStateOf<String?>(null) }
 
 
 
@@ -96,7 +99,6 @@ fun ProfileScreen(onSignOut: () -> Unit = {},
                     visualTransformation = PasswordVisualTransformation(),
                     modifier            = Modifier.fillMaxWidth()
                 )
-                Spacer(Modifier.height(8.dp))
                 OutlinedTextField(
                     value               = confirmPassword,
                     onValueChange       = { confirmPassword = it },
@@ -104,6 +106,14 @@ fun ProfileScreen(onSignOut: () -> Unit = {},
                     visualTransformation = PasswordVisualTransformation(),
                     modifier            = Modifier.fillMaxWidth()
                 )
+                if (errorMessage != null) {
+                    Text(text = errorMessage, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
+                }
+                if (localError != null) {
+                    Text(localError!!, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
+                } else if (errorMessage != null) {
+                    Text(errorMessage, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
+                }
             }
         }
 
@@ -132,10 +142,17 @@ fun ProfileScreen(onSignOut: () -> Unit = {},
                 }
 
                 SmallFloatingActionButton(
-                    onClick = { isEditing=true },
+                    onClick = {
+                        if (!isLoading) {
+                            isEditing = true
+                        }
+                    },
+                    modifier = Modifier
+                        .alpha(if (isLoading) 0.4f else 1f),
                     containerColor = Color(0xFFFEB0B2),
-                    contentColor = Color.White
-                ) {
+                    contentColor = Color.White,
+
+                    ) {
 
                     Icon(
                         imageVector = Icons.Default.Edit,
@@ -156,7 +173,15 @@ fun ProfileScreen(onSignOut: () -> Unit = {},
                         fontWeight = FontWeight.ExtraBold)
                 }
                 Button(
-                    onClick = { isEditing = false },
+                    onClick = {
+                              if(newPassword.isBlank()||newPassword!=confirmPassword){
+                                  localError = "Passwords do not match"
+                              }
+                              else{
+                                  vm.changePassword(newPassword)
+                                  localError = null
+                                  isEditing = false
+                              }},
                     enabled = !isLoading,
                     colors  = ButtonDefaults.buttonColors(containerColor = Color(0xFFFEB0B2)),
                     shape   = RoundedCornerShape(8.dp)
@@ -170,11 +195,21 @@ fun ProfileScreen(onSignOut: () -> Unit = {},
                 }
             }
         }
+
+
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier
                     .align(Alignment.Center)
             )
+        }
+
+        LaunchedEffect(isLoading, errorMessage) {
+            if (!isLoading && errorMessage == null && isEditing) {
+                isEditing = false
+                newPassword = ""
+                confirmPassword = ""
+            }
         }
     }
 }
