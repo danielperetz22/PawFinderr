@@ -5,6 +5,7 @@ import FirebaseAuth
 class SessionStore: ObservableObject {
     @Published var isSignedIn: Bool = false
     @Published var currentTitle: String = ""
+    @Published var email: String = ""
 
     private var handle: AuthStateDidChangeListenerHandle?
 
@@ -14,12 +15,16 @@ class SessionStore: ObservableObject {
 
     /// מאזין לשינויים במצב ה־Auth
     func listen() {
-        handle = Auth.auth().addStateDidChangeListener { _, user in
-            DispatchQueue.main.async {
-                self.isSignedIn = (user != nil)
+            handle = Auth.auth().addStateDidChangeListener { [weak self] _, user in
+                if let user = user {
+                    self?.isSignedIn = true
+                    self?.email      = user.email ?? ""
+                } else {
+                    self?.isSignedIn = false
+                    self?.email      = ""
+                }
             }
         }
-    }
 
     /// מבצע signOut ב־Firebase
     func signOut() {
