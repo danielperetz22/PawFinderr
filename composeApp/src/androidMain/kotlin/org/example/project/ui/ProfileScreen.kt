@@ -35,8 +35,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.example.project.R
 import org.example.project.data.firebase.RemoteFirebaseRepository
+import org.example.project.ui.home.AndroidUserViewModel
 import org.example.project.user.UserViewModel
 
 
@@ -50,8 +52,12 @@ private val balooBhaijaan2Family = FontFamily(
 
 
 @Composable
-fun ProfileScreen(onSignOut: () -> Unit = {},isLoading: Boolean, ) {
-    val vm = remember { UserViewModel(repo = RemoteFirebaseRepository()) }
+fun ProfileScreen(onSignOut: () -> Unit = {},
+                  isLoading: Boolean,
+                  errorMessage : String?,
+                  ) {
+//    val vm = remember { UserViewModel(repo = RemoteFirebaseRepository()) }
+    val vm: AndroidUserViewModel = viewModel()
     val email by vm.currentEmail.collectAsState()
     val signedIn by vm.currentUid.collectAsState()
 
@@ -91,9 +97,8 @@ fun ProfileScreen(onSignOut: () -> Unit = {},isLoading: Boolean, ) {
         ) {
             Button(
                 onClick = {
-                    vm.signOut()
-                    onSignOut()
-                },
+                    vm.signOut() },
+                enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFEB0B2)),
                 shape = RoundedCornerShape(8.dp)
             ) {

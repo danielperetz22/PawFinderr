@@ -2,6 +2,7 @@ package org.example.project.user
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -60,8 +61,18 @@ class UserViewModel(
 
     fun signOut() {
         scope.launch {
-            repo.signOut()
-            _currentUid.value = null
+            _isLoading.value = true
+            _error.value     = null
+            delay(2000)
+            try {
+                repo.signOut()
+                _currentUid.value   = null
+                _currentEmail.value = null
+            } catch (e: Exception) {
+                _error.value = e.message
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 }

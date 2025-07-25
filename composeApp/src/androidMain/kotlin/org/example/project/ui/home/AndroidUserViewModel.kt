@@ -10,6 +10,8 @@ class AndroidUserViewModel : ViewModel() {
     val currentUid   = shared.currentUid
     val isLoading    = shared.isLoading
     val errorMessage = shared.errorMessage
+    val currentEmail = shared.currentEmail
+
 
     fun signUp(email: String, pwd: String) = shared.signUp(email, pwd)
     fun signIn(email: String, pwd: String) = shared.signIn(email, pwd)

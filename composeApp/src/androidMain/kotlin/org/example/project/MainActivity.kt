@@ -140,16 +140,24 @@ class MainActivity : ComponentActivity() {
                         composable("profile") {
                             val vmProfile: AndroidUserViewModel = viewModel()
                             val isLoading by vmProfile.isLoading.collectAsState()
+                            val errorMessage by vmProfile.errorMessage.collectAsState()
+                            val uid by vmProfile.currentUid.collectAsState()
                             ProfileScreen(
                                 isLoading           = isLoading,
+                                errorMessage        = errorMessage,
                                 onSignOut = {
                                     vmProfile.signOut()
+                                }
+                            )
+                            LaunchedEffect(uid) {
+                                if (uid == null && !isLoading) {
                                     navController.navigate("home") {
                                         popUpTo("home") { inclusive = true }
                                     }
                                 }
-                            )
+                            }
                         }
+
 
                         // 6) reports
                         composable("reports") {
