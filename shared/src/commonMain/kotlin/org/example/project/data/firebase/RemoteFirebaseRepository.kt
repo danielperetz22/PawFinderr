@@ -36,4 +36,6 @@ class RemoteFirebaseRepository : FirebaseRepository {
     override suspend fun signOut() {
         Firebase.auth.signOut()
     }
+    override fun currentUserEmail(): String? =
+        Firebase.auth.currentUser?.email
 }

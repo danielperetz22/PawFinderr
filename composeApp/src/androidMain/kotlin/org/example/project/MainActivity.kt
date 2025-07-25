@@ -19,6 +19,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.FirebaseApp
 import dev.gitlive.firebase.Firebase
+import org.example.project.ui.ProfileScreen
 import org.example.project.ui.bottomBar.AppTopBar
 import org.example.project.ui.bottomBar.BottomBar
 import org.example.project.ui.home.HomeScreen
@@ -137,7 +138,17 @@ class MainActivity : ComponentActivity() {
 
                         // 5) profile
                         composable("profile") {
-                            // ProfileScreen(...)
+                            val vmProfile: AndroidUserViewModel = viewModel()
+                            val isLoading by vmProfile.isLoading.collectAsState()
+                            ProfileScreen(
+                                isLoading           = isLoading,
+                                onSignOut = {
+                                    vmProfile.signOut()
+                                    navController.navigate("home") {
+                                        popUpTo("home") { inclusive = true }
+                                    }
+                                }
+                            )
                         }
 
                         // 6) reports

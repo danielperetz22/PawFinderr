@@ -23,6 +23,9 @@ class UserViewModel(
     private val _error = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _error.asStateFlow()
 
+    private val _currentEmail = MutableStateFlow<String?>(repo.currentUserEmail())
+    val currentEmail: StateFlow<String?> = _currentEmail.asStateFlow()
+
     fun signUp(email: String, password: String) {
         scope.launch {
             _isLoading.value = true
