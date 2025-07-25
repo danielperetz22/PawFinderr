@@ -12,20 +12,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,11 +32,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.example.project.R
-import org.example.project.data.firebase.RemoteFirebaseRepository
 import org.example.project.ui.home.AndroidUserViewModel
 import org.example.project.user.UserViewModel
 
@@ -56,10 +54,14 @@ fun ProfileScreen(onSignOut: () -> Unit = {},
                   isLoading: Boolean,
                   errorMessage : String?,
                   ) {
-//    val vm = remember { UserViewModel(repo = RemoteFirebaseRepository()) }
     val vm: AndroidUserViewModel = viewModel()
     val email by vm.currentEmail.collectAsState()
     val signedIn by vm.currentUid.collectAsState()
+
+    var isEditing by remember { mutableStateOf(false) }
+    var newPassword by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+
 
 
     Box(
@@ -86,6 +88,23 @@ fun ProfileScreen(onSignOut: () -> Unit = {},
             } else {
                 Text("not connected")
             }
+            if (isEditing) {
+                OutlinedTextField(
+                    value               = newPassword,
+                    onValueChange       = { newPassword = it },
+                    label               = { Text("Enter new password") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier            = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value               = confirmPassword,
+                    onValueChange       = { confirmPassword = it },
+                    label               = { Text("Confirm new password") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier            = Modifier.fillMaxWidth()
+                )
+            }
         }
 
         Row(
@@ -95,31 +114,60 @@ fun ProfileScreen(onSignOut: () -> Unit = {},
                 .padding(bottom = 110.dp, start = 16.dp, end = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Button(
-                onClick = {
-                    onSignOut() },
-                enabled = !isLoading,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFEB0B2)),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text("logout",
-                    color = Color.White,
-                    fontFamily = balooBhaijaan2Family,
-                    fontWeight = FontWeight.ExtraBold,
-                )
-            }
+            if(!isEditing) {
+                Button(
+                    onClick = {
+                        onSignOut()
+                    },
+                    enabled = !isLoading,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFEB0B2)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        "logout",
+                        color = Color.White,
+                        fontFamily = balooBhaijaan2Family,
+                        fontWeight = FontWeight.ExtraBold,
+                    )
+                }
 
-            SmallFloatingActionButton(
-                onClick = { /* פעולה לערוך פרופיל */ },
-                containerColor = Color(0xFFFEB0B2),
-                contentColor   = Color.White
+                SmallFloatingActionButton(
+                    onClick = { isEditing=true },
+                    containerColor = Color(0xFFFEB0B2),
+                    contentColor = Color.White
                 ) {
 
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit Profile"
-                )
-
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit Profile"
+                    )
+                }
+            }else{
+                Button(
+                    onClick = { isEditing = false },
+                    enabled = !isLoading,
+                    colors  = ButtonDefaults.buttonColors(containerColor = Color(0xFFF69092)),
+                    shape   = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        "Cancel",
+                        color = Color.White,
+                        fontFamily = balooBhaijaan2Family,
+                        fontWeight = FontWeight.ExtraBold)
+                }
+                Button(
+                    onClick = { isEditing = false },
+                    enabled = !isLoading,
+                    colors  = ButtonDefaults.buttonColors(containerColor = Color(0xFFFEB0B2)),
+                    shape   = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        "Save changes",
+                        color = Color.White,
+                        fontFamily = balooBhaijaan2Family,
+                        fontWeight = FontWeight.ExtraBold,
+                    )
+                }
             }
         }
         if (isLoading) {
