@@ -6,18 +6,21 @@ struct NewReportView: View {
     @State private var description: String = ""
     @State private var name: String = ""
     @State private var phone: String = ""
-    
+    @State private var selectedImage: UIImage? = nil
+    @State private var showPhotoOptions: Bool = false
+    @State private var showImagePicker: Bool = false
+    @State private var imagePickerSource: UIImagePickerController.SourceType = .photoLibrary
+
     // MARK: – Callbacks
     var onAddPhoto: () -> Void = {}
     var onAddLocation: () -> Void = {}
     var onPublish: () -> Void = {}
-    
+
     var body: some View {
         ZStack {
-            // full-screen background
             Color("BackgroundGray")
                 .ignoresSafeArea()
-            
+
             VStack(spacing: 16) {
                 Spacer()
                 
@@ -41,15 +44,27 @@ struct NewReportView: View {
 
                 
                 // MARK: Photo placeholder
-                Button(action: onAddPhoto) {
+                Button {
+                    showPhotoOptions = true
+                } label: {
                     ZStack(alignment: .bottomTrailing) {
-                        // fill + stroke will both size to this ZStack’s frame
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color("BackgroundGray"))
+                        // If we have an image, show it:
+                        if let uiImage = selectedImage {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(maxWidth: .infinity, maxHeight: 250)
+                                .clipped()
+                                .cornerRadius(8)
+                        } else {
+                            // your empty placeholder
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color("BackgroundGray"))
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.gray, lineWidth: 1)
+                        }
 
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color(.gray), lineWidth: 1)
-
+                        // always overlay the “+”:
                         Text("+")
                             .font(.custom("BalooBhaijaan2-Bold", size: 16))
                             .foregroundColor(.white)
@@ -59,20 +74,29 @@ struct NewReportView: View {
                             .padding(6)
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 120)
+                    .frame(height: 250)
+                }
+                .confirmationDialog("Select image source",
+                                    isPresented: $showPhotoOptions,
+                                    titleVisibility: .visible) {
+                    Button("Photos") {
+                        imagePickerSource = .photoLibrary
+                        showImagePicker = true
+                    }
+                    // only offer Camera if available
+                    if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                        Button("Camera") {
+                            imagePickerSource = .camera
+                            showImagePicker = true
+                        }
+                    }
+                    Button("Cancel", role: .cancel) { }
+                }
+                .sheet(isPresented: $showImagePicker) {
+                    ImagePicker(sourceType: imagePickerSource,
+                                selectedImage: $selectedImage)
                 }
 
-                
-                TextField("Description",text: $description)
-                    .frame(height: 80)
-                    .padding(4)
-                    .font(.custom("BalooBhaijaan2-Bold", size: 16))
-                    .background(Color("BackgroundGray"))
-                    .cornerRadius(8)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color(.gray), lineWidth: 1)
-                    )
 
                 // MARK: Name
                 TextField("Add your name here", text: $name)
