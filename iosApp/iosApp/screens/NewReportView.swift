@@ -9,6 +9,8 @@ struct NewReportView: View {
     @State private var selectedImage: UIImage? = nil
     @State private var showPhotoOptions: Bool = false
     @State private var showImagePicker: Bool = false
+    @State private var isUploading = false
+    @State private var uploadedUrl: String? = nil
     @State private var imagePickerSource: UIImagePickerController.SourceType = .photoLibrary
 
     // MARK: – Callbacks
@@ -129,15 +131,37 @@ struct NewReportView: View {
                 }
                 
                 // MARK: Publish Report
-                Button(action: onPublish) {
-                    Text("Publish Report")
-                        .fontWeight(.bold)
-                        .foregroundColor(.white)
+                Button {
+                    // 1️⃣ Action
+                    guard let uiImage = selectedImage,
+                          let jpegData = uiImage.jpegData(compressionQuality: 0.8)
+                    else { return }
+
+                    isUploading = true
+                    CloudinaryUploader.upload(jpegData) { url in
+                      DispatchQueue.main.async {
+                        isUploading = false
+                        uploadedUrl = url
+                        print("Cloudinary URL = \(url ?? "nil")")
+                      }
+                    }
+                } label: {
+                    // 2️⃣ Label
+                    if isUploading {
+                      ProgressView()
+                        .progressViewStyle(.circular)
+                        .frame(width: 24, height: 24)
+                    } else {
+                      Text("Publish Report")
                         .font(.custom("BalooBhaijaan2-Bold", size: 16))
+                        .foregroundColor(.white)
                         .frame(maxWidth: .infinity, minHeight: 48)
                         .background(Color("PrimaryPink"))
                         .cornerRadius(8)
+                    }
                 }
+                // 3️⃣ Modifiers go here, no trailing closure:
+                .disabled(selectedImage == nil || isUploading)
                 
                 Spacer()
             }
