@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.CircleShape
 import android.content.ContentValues
 import android.net.Uri
 import android.provider.MediaStore
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.LocalContext
@@ -31,6 +32,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.rememberAsyncImagePainter
+import org.example.project.CloudinaryUploader
 
 private val balooBhaijaan2Family = FontFamily(
     Font(R.font.baloobhaijaan2_regular,   FontWeight.Normal),
@@ -45,12 +47,14 @@ private val balooBhaijaan2Family = FontFamily(
 fun NewReportScreen(
     onImagePicked: (Uri) -> Unit = {},
     onAddLocation: () -> Unit = {},
-    onPublish: () -> Unit = {}
+    onPublish: (Uri) -> Unit = {}
 ) {
     val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
     var cameraUri by remember { mutableStateOf<Uri?>(null) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var uploading by remember { mutableStateOf(false) }
+    var uploadedUrl by remember { mutableStateOf<String?>(null) }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
@@ -271,7 +275,19 @@ fun NewReportScreen(
 
             // --- Publish Report ---
             Button(
-                onClick = onPublish,
+                onClick = {
+                    selectedImageUri?.let { uri ->
+                        uploading = true
+                        CloudinaryUploader.upload(context, uri) { url ->
+                            uploading = false
+                            uploadedUrl = url
+                            // for now just print it:
+                            Log.d("NewReport", "Cloudinary URL = $url")
+                            // and if you already have a Shared ViewModel:
+                            // onPublish(url)
+                        }
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(44.dp),
@@ -281,12 +297,20 @@ fun NewReportScreen(
                     contentColor = Color.White
                 )
             ) {
-                Text(
-                    "Publish Report",
-                    fontSize = 16.sp,
-                    fontFamily = balooBhaijaan2Family,
-                    fontWeight = FontWeight.Bold
-                )
+                if (uploading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = Color.White
+                    )
+                } else {
+                    Text(
+                        "Publish Report",
+                        fontSize = 16.sp,
+                        fontFamily = balooBhaijaan2Family,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }
