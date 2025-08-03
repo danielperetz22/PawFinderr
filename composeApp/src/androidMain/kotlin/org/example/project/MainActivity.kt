@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
@@ -27,6 +26,13 @@ import org.example.project.ui.home.LoginScreen
 import org.example.project.ui.home.RegisterScreen
 import org.example.project.ui.home.AndroidUserViewModel
 import org.example.project.ui.feed.FeedScreen
+import org.example.project.ui.report.NewReportScreen
+import org.example.project.data.report.ReportViewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import org.example.project.data.report.ReportUiState
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -161,7 +167,28 @@ class MainActivity : ComponentActivity() {
 
                         // 6) reports
                         composable("reports") {
-                            // MyReportsScreen(...)
+                            // 1️⃣ Create the shared ViewModel just once:
+                            val reportVm = remember { ReportViewModel() }
+
+                            // 2️⃣ Observe its UI-state so you can show loading/success/errors if you like:
+                            val uiState by reportVm.uiState.collectAsState()
+
+                            // 3️⃣ Render your screen, passing in the save callback:
+                            NewReportScreen(
+                                onImagePicked = { /* no change here */ },
+                                onAddLocation = { /* optional for later */ }
+                            ) { description, name, phone, isLost, imageUrl ->
+                                // this will fire after Cloudinary returns a URL:
+                                reportVm.saveReport(
+                                    description = description,
+                                    name        = name,
+                                    phone       = phone,
+                                    imageUrl    = imageUrl,
+                                    isLost      = isLost,
+                                    location    = null
+                                )
+                            }
+
                         }
                     }
                 }

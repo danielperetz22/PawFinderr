@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
+
 }
 
 kotlin {
@@ -32,6 +33,8 @@ kotlin {
             implementation("com.google.firebase:firebase-auth-ktx:22.1.0")
             implementation("com.google.firebase:firebase-firestore-ktx:24.2.1")
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.1")
+            implementation("io.insert-koin:koin-android:4.0.4")
+            implementation("io.insert-koin:koin-androidx-compose:4.0.4")
         }
         commonMain.dependencies {
             implementation(project.dependencies.platform(libs.firebase.bom))
@@ -43,6 +46,11 @@ kotlin {
             implementation("dev.gitlive:firebase-firestore:2.1.0")
             implementation("dev.gitlive:firebase-common:2.1.0")
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
+            api("io.insert-koin:koin-core:4.0.4")
+            implementation("io.insert-koin:koin-compose:4.0.4")
+            implementation("io.insert-koin:koin-test:4.0.4")
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
+
 
 
         }

@@ -6,7 +6,7 @@ import FirebaseFirestore
 struct LoginView: View {
     @State private var email    = ""
     @State private var password = ""
-    
+
     @State private var isLoggedIn = false
 
 

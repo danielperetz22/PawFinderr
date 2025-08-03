@@ -131,10 +131,10 @@ struct RegisterView: View {
                                             "email": user.email ?? email
                                         ])
                                     // 3. יוזמים ניווט ל‑Home (למשל באמצעות @EnvironmentObject או State)
-                                    print("🙌 registered:", user.uid)
+                                    print("registered:", user.uid)
                                     didRegister = true
                                 } catch {
-                                    print("❌ registration error:", error.localizedDescription)
+                                    print("registration error:", error.localizedDescription)
                                 }
                             }
                         } label: {

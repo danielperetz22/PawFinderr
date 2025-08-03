@@ -19,7 +19,6 @@ class RemoteFirebaseRepository : FirebaseRepository {
     }
 
     override fun currentUserUid(): String? =
-        // מחזיר את ה‑UID של המשתמש המחובר, או null
         Firebase.auth.currentUser?.uid
 
     override suspend fun saveUserProfile(uid: String, email: String) {
@@ -36,6 +35,36 @@ class RemoteFirebaseRepository : FirebaseRepository {
     override suspend fun signOut() {
         Firebase.auth.signOut()
     }
+
+    override suspend fun saveReport(
+        description: String,
+        name: String,
+        phone: String,
+        imageUrl: String,
+        isLost: Boolean,
+        location: String?
+    ) {
+        // ① get the current user’s UID
+        val userId = Firebase.auth.currentUser
+            ?.uid
+            ?: throw IllegalStateException("No authenticated user!")
+
+        // ② write a document that includes userId
+        Firebase.firestore
+            .collection("reports")
+            .add(
+                mapOf(
+                    "userId"      to userId,
+                    "description" to description,
+                    "name"        to name,
+                    "phone"       to phone,
+                    "imageUrl"    to imageUrl,
+                    "isLost"      to isLost,
+                    "location"    to location
+                )
+            )
+    }
+}
 
     override fun currentUserEmail(): String? =
         Firebase.auth.currentUser?.email
