@@ -19,6 +19,7 @@ class ReportViewModel(
         ReportRepositoryImpl(),
         CoroutineScope(Dispatchers.Default + SupervisorJob())
     )
+
     fun saveReport(
         description: String,
         name: String,
