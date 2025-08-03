@@ -65,3 +65,12 @@ class RemoteFirebaseRepository : FirebaseRepository {
             )
     }
 }
+
+    override fun currentUserEmail(): String? =
+        Firebase.auth.currentUser?.email
+
+    override suspend fun updatePassword(newPassword: String) {
+        Firebase.auth.currentUser
+            ?.updatePassword(newPassword)
+            ?: throw IllegalStateException("No signed-in user")
+    }}
