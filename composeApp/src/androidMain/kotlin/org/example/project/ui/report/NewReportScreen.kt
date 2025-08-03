@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.rememberAsyncImagePainter
 import org.example.project.CloudinaryUploader
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 private val balooBhaijaan2Family = FontFamily(
     Font(R.font.baloobhaijaan2_regular,   FontWeight.Normal),
@@ -41,13 +42,17 @@ private val balooBhaijaan2Family = FontFamily(
     Font(R.font.baloobhaijaan2_bold,      FontWeight.Bold),
     Font(R.font.baloobhaijaan2_extrabold, FontWeight.ExtraBold)
 )
-
-@Preview(showBackground = true)
 @Composable
 fun NewReportScreen(
     onImagePicked: (Uri) -> Unit = {},
     onAddLocation: () -> Unit = {},
-    onPublish: (Uri) -> Unit = {}
+    onPublish: (
+        description: String,
+        name: String,
+        phone: String,
+        isLost: Boolean,
+        imageUrl: String
+    ) -> Unit
 ) {
     val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
@@ -275,19 +280,22 @@ fun NewReportScreen(
 
             // --- Publish Report ---
             Button(
-                onClick = {
-                    selectedImageUri?.let { uri ->
-                        uploading = true
-                        CloudinaryUploader.upload(context, uri) { url ->
-                            uploading = false
-                            uploadedUrl = url
-                            // for now just print it:
-                            Log.d("NewReport", "Cloudinary URL = $url")
-                            // and if you already have a Shared ViewModel:
-                            // onPublish(url)
+                onClick = { selectedImageUri?.let { uri ->
+                    uploading = true
+                    CloudinaryUploader.upload(context, uri) { url ->
+                        uploading = false
+                        url?.let { imageUrl ->
+                            // pass all your current inputs plus the Cloudinary URL:
+                            onPublish(
+                                description,
+                                name,
+                                phone,
+                                isLost,
+                                imageUrl
+                            )
                         }
                     }
-                },
+                }},
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(44.dp),

@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
+
 }
 
 kotlin {
@@ -48,6 +49,7 @@ kotlin {
             api("io.insert-koin:koin-core:4.0.4")
             implementation("io.insert-koin:koin-compose:4.0.4")
             implementation("io.insert-koin:koin-test:4.0.4")
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
 
 
 

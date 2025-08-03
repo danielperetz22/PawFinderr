@@ -84,6 +84,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":shared"))
     debugImplementation(compose.uiTooling)
     implementation(compose.preview)
     implementation(libs.androidx.activity.compose)
@@ -108,6 +109,7 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
     implementation(libs.cloudinary.android)
+
 
 }
 

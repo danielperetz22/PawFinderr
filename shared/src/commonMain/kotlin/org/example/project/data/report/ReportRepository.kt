@@ -1,7 +1,13 @@
 package org.example.project.data.report
 
-import org.example.project.data.report.ReportUiState
 
 interface ReportRepository {
-    suspend fun submitReport(report: ReportUiState): Result<Unit>
+    suspend fun saveReport(
+        description: String,
+        name: String,
+        phone: String,
+        imageUrl: String,
+        isLost: Boolean,
+        location: String? = null
+    )
 }

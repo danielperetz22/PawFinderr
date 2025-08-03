@@ -1,4 +1,5 @@
 import SwiftUI
+import Shared
 
 struct NewReportView: View {
     // MARK: – State
@@ -16,7 +17,14 @@ struct NewReportView: View {
     // MARK: – Callbacks
     var onAddPhoto: () -> Void = {}
     var onAddLocation: () -> Void = {}
-    var onPublish: () -> Void = {}
+    var onPublish: (
+          _ description: String,
+          _ name: String,
+          _ phone: String,
+          _ isLost: Bool,
+          _ imageUrl: String
+        ) -> Void = { _,_,_,_,_ in }
+
 
     var body: some View {
         ZStack {
@@ -55,7 +63,7 @@ struct NewReportView: View {
                             Image(uiImage: uiImage)
                                 .resizable()
                                 .scaledToFill()
-                                .frame(maxWidth: .infinity, maxHeight: 250)
+                                .frame(maxWidth: .infinity, maxHeight: 180)
                                 .clipped()
                                 .cornerRadius(8)
                         } else {
@@ -76,7 +84,7 @@ struct NewReportView: View {
                             .padding(6)
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 250)
+                    .frame(height: 180)
                 }
                 .confirmationDialog("Select image source",
                                     isPresented: $showPhotoOptions,
@@ -97,6 +105,26 @@ struct NewReportView: View {
                 .sheet(isPresented: $showImagePicker) {
                     ImagePicker(sourceType: imagePickerSource,
                                 selectedImage: $selectedImage)
+                }
+
+
+                // MARK: Description
+                TextEditor(text: $description)
+                  .padding(12)
+                  .font(.custom("BalooBhaijaan2-Bold", size: 16))
+                  .scrollContentBackground(.hidden)
+                  .background(Color("BackgroundGray"))
+                  .cornerRadius(8)
+                  .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                      .stroke(Color.gray, lineWidth: 1)
+                  )
+                  .frame(height: 100)
+                if description.isEmpty {
+                  Text("Description")
+                    .foregroundColor(.gray)
+                    .padding(.top, 12)     // match the editor’s padding
+                    .padding(.leading, 16) // match the editor’s padding + border
                 }
 
 
@@ -132,20 +160,28 @@ struct NewReportView: View {
                 
                 // MARK: Publish Report
                 Button {
-                    // 1️⃣ Action
                     guard let uiImage = selectedImage,
-                          let jpegData = uiImage.jpegData(compressionQuality: 0.8)
-                    else { return }
+                                let jpegData = uiImage.jpegData(compressionQuality: 0.8)
+                          else { return }
 
-                    isUploading = true
-                    CloudinaryUploader.upload(jpegData) { url in
-                      DispatchQueue.main.async {
-                        isUploading = false
-                        uploadedUrl = url
-                        print("Cloudinary URL = \(url ?? "nil")")
-                      }
-                    }
-                } label: {
+                          isUploading = true
+                          CloudinaryUploader.upload(jpegData) { url in
+                            DispatchQueue.main.async {
+                              isUploading = false
+                              if let imageUrl = url {
+                                // ① call your callback with *all* the fields:
+                                onPublish(
+                                  description,
+                                  name,
+                                  phone,
+                                  isLost,
+                                  imageUrl
+                                )
+                                 
+                              }
+                            }
+                          }
+                }label: {
                     // 2️⃣ Label
                     if isUploading {
                       ProgressView()
@@ -196,7 +232,14 @@ private struct ToggleButton: View {
 
 
 struct NewReportView_Previews: PreviewProvider {
-    static var previews: some View {
-        NewReportView()
-    }
+  static var previews: some View {
+    NewReportView(
+      onAddPhoto:    { /* no-op */ },
+      onAddLocation: { /* no-op */ },
+      onPublish:     { description, name, phone, isLost, imageUrl in
+        // You can even preview values here:
+        print("Preview publish:", description, name, phone, isLost, imageUrl)
+      }
+    )
+  }
 }

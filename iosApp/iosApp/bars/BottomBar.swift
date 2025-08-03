@@ -45,7 +45,7 @@ struct BottomBar: View {
                     Label("Profile", systemImage: "person.circle")
                 }
 
-            NewReportView()
+            ReportsContainerView()
                 .tabItem {
                     Label("Reports", systemImage: "list.bullet")
                 }
