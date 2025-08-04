@@ -73,9 +73,8 @@ struct ProfileView: View {
                 }
         .overlay {
                     if vm.isLoading {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle())
-                            .scaleEffect(1.5)
+                        Color.black.opacity(0.3).ignoresSafeArea()
+                        DogLoaderView()
                     }
                 }
     }
