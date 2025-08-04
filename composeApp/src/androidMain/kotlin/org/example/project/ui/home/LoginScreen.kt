@@ -23,6 +23,7 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.LottieAnimation
 import kotlinx.coroutines.delay
+import org.example.project.ui.components.LoadingAnimation
 
 
 private val balooBhaijaan2Family = FontFamily(
@@ -43,24 +44,24 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    var showAnimation by remember { mutableStateOf(false) }
+//    var showAnimation by remember { mutableStateOf(false) }
 
-    LaunchedEffect(isLoading) {
-        if (isLoading) {
-            delay(2000)
-            showAnimation = true
-        } else {
-            showAnimation = false
-        }
-    }
+//    LaunchedEffect(isLoading) {
+//        if (isLoading) {
+//            delay(2000)
+//            showAnimation = true
+//        } else {
+//            showAnimation = false
+//        }
+//    }
 
-    val composition by rememberLottieComposition(
-        LottieCompositionSpec.RawRes(R.raw.long_dog)
-    )
-    val progress by animateLottieCompositionAsState(
-        composition = composition,
-        iterations  = LottieConstants.IterateForever
-    )
+//    val composition by rememberLottieComposition(
+//        LottieCompositionSpec.RawRes(R.raw.long_dog)
+//    )
+//    val progress by animateLottieCompositionAsState(
+//        composition = composition,
+//        iterations  = LottieConstants.IterateForever
+//    )
     Box(Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -156,18 +157,29 @@ fun LoginScreen(
             }
 
         }
+//        if (isLoading) {
+//            Box(
+//                Modifier
+//                    .matchParentSize()
+//                    .background(Color.Black.copy(alpha = 0.3f))
+//            )
+//            LottieAnimation(
+//                composition = composition,
+//                progress    = { progress },
+//                modifier    = Modifier
+//                    .size(150.dp)
+//                    .align(Alignment.Center)
+//            )
+//        }
         if (isLoading) {
             Box(
                 Modifier
                     .matchParentSize()
                     .background(Color.Black.copy(alpha = 0.3f))
             )
-            LottieAnimation(
-                composition = composition,
-                progress    = { progress },
-                modifier    = Modifier
-                    .size(150.dp)
-                    .align(Alignment.Center)
+            LoadingAnimation(
+                isLoading = isLoading,
+                modifier  = Modifier.matchParentSize()
             )
         }
     }
