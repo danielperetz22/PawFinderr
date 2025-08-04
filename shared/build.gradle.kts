@@ -32,6 +32,7 @@ kotlin {
             implementation("com.google.firebase:firebase-auth-ktx:22.1.0")
             implementation("com.google.firebase:firebase-firestore-ktx:24.2.1")
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.1")
+            implementation("com.airbnb.android:lottie-compose:6.0.0")
         }
         commonMain.dependencies {
             implementation(project.dependencies.platform(libs.firebase.bom))
