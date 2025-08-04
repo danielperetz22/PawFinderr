@@ -38,6 +38,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.example.project.R
+import org.example.project.ui.components.LoadingAnimation
 import org.example.project.ui.home.AndroidUserViewModel
 import org.example.project.user.UserViewModel
 
@@ -198,9 +199,14 @@ fun ProfileScreen(onSignOut: () -> Unit = {},
 
 
         if (isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .align(Alignment.Center)
+            Box(
+                Modifier
+                    .matchParentSize()
+                    .background(Color.Black.copy(alpha = 0.3f))
+            )
+            LoadingAnimation(
+                isLoading = isLoading,
+                modifier  = Modifier.matchParentSize()
             )
         }
 

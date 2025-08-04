@@ -17,12 +17,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.example.project.R
-import com.airbnb.lottie.compose.rememberLottieComposition
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.animateLottieCompositionAsState
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.LottieAnimation
-import kotlinx.coroutines.delay
 import org.example.project.ui.components.LoadingAnimation
 
 
@@ -44,24 +38,7 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-//    var showAnimation by remember { mutableStateOf(false) }
 
-//    LaunchedEffect(isLoading) {
-//        if (isLoading) {
-//            delay(2000)
-//            showAnimation = true
-//        } else {
-//            showAnimation = false
-//        }
-//    }
-
-//    val composition by rememberLottieComposition(
-//        LottieCompositionSpec.RawRes(R.raw.long_dog)
-//    )
-//    val progress by animateLottieCompositionAsState(
-//        composition = composition,
-//        iterations  = LottieConstants.IterateForever
-//    )
     Box(Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -157,20 +134,6 @@ fun LoginScreen(
             }
 
         }
-//        if (isLoading) {
-//            Box(
-//                Modifier
-//                    .matchParentSize()
-//                    .background(Color.Black.copy(alpha = 0.3f))
-//            )
-//            LottieAnimation(
-//                composition = composition,
-//                progress    = { progress },
-//                modifier    = Modifier
-//                    .size(150.dp)
-//                    .align(Alignment.Center)
-//            )
-//        }
         if (isLoading) {
             Box(
                 Modifier
