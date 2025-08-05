@@ -7,6 +7,9 @@ struct LoginView: View {
     @State private var email    = ""
     @State private var password = ""
     
+    @State private var errorMessage = ""
+    @State private var isLoading = false
+    
     @State private var isLoggedIn = false
 
 
@@ -55,14 +58,18 @@ struct LoginView: View {
                             Task {
                                 do {
                                     // 1. מחוברים עם מייל וסיסמה
+                                    isLoading = true
                                     let result = try await Auth.auth()
                                         .signIn(withEmail: email, password: password)
                                     let user = result.user
                                     print("logged in:", user.uid)
+                                    isLoading = false
                                     isLoggedIn = true
                                     // כאן אפשר להתריע ל‑ViewModel או לשמור ב‑@AppStorage
                                 } catch {
                                     print("login error:", error.localizedDescription)
+                                    isLoading = false
+                                    errorMessage = error.localizedDescription
                                 }
                             }
                         } label: {
@@ -72,6 +79,13 @@ struct LoginView: View {
                                 .background(Color.primaryPink)
                                 .foregroundColor(.white)
                                 .cornerRadius(8)
+                        }.disabled(isLoading || password.isEmpty || email.isEmpty)
+                        
+                        if !errorMessage.isEmpty {
+                            Text(errorMessage)
+                                .foregroundColor(.red)
+                                .font(.caption)
+                                .padding(.top, 4)
                         }
 
                         HStack {
@@ -86,6 +100,11 @@ struct LoginView: View {
                 }
                 .padding(.horizontal, 24)
                 .frame(maxHeight: .infinity)
+                
+                if isLoading {
+                    Color.black.opacity(0.3).ignoresSafeArea()
+                    DogLoaderView()
+                }
             }
         }
     }
