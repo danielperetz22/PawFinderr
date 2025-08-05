@@ -6,6 +6,9 @@ class SessionStore: ObservableObject {
     @Published var isSignedIn: Bool = false
     @Published var currentTitle: String = ""
     @Published var email: String = ""
+    
+    @Published var isLoading = false
+    @Published var errorMessage = ""
 
     private var handle: AuthStateDidChangeListenerHandle?
 
@@ -18,17 +21,30 @@ class SessionStore: ObservableObject {
             handle = Auth.auth().addStateDidChangeListener { [weak self] _, user in
                 if let user = user {
                     self?.isSignedIn = true
-                    self?.email      = user.email ?? ""
+                    self?.email = user.email ?? ""
                 } else {
                     self?.isSignedIn = false
-                    self?.email      = ""
+                    self?.email = ""
                 }
             }
         }
 
     /// מבצע signOut ב־Firebase
     func signOut() {
-        try? Auth.auth().signOut()
+        isLoading = true
+        errorMessage = ""
+        
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(1))
+        do{
+            try Auth.auth().signOut()
+
+        } catch {
+            self.errorMessage = error.localizedDescription
+        }
+            isLoading = false
+
+        }
     }
 
     deinit {

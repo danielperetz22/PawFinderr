@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C43A86002E4134AA0064FAF9 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = C43A85FF2E4134AA0064FAF9 /* Lottie */; };
 		D716FEB72E2F8CCB00186367 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D716FEB62E2F8CCB00186367 /* GoogleService-Info.plist */; };
 		D716FEB92E2F8D0C00186367 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = D716FEB82E2F8D0C00186367 /* FirebaseAnalytics */; };
 		D716FEBB2E2F8D0C00186367 /* FirebaseAnalyticsIdentitySupport in Frameworks */ = {isa = PBXBuildFile; productRef = D716FEBA2E2F8D0C00186367 /* FirebaseAnalyticsIdentitySupport */; };
@@ -22,27 +23,47 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		B99700CA2DC9B8D800C7335B /* Exceptions for "iosApp" folder in "iosApp" target */ = {
+		C43A865F2E4135DC0064FAF9 /* Exceptions for "iosApp" folder in "iosApp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Info.plist,
+				Assets.xcassets,
+				bars/BottomBar.swift,
+				bars/TopBar.swift,
+				components/DogLoaderView.swift,
+				components/long_dog.json,
+				ContentView.swift,
+				"Fonts/BalooBhaijaan2-Bold.ttf",
+				"Fonts/BalooBhaijaan2-ExtraBold.ttf",
+				"Fonts/BalooBhaijaan2-Medium.ttf",
+				"Fonts/BalooBhaijaan2-Regular.ttf",
+				"Fonts/BalooBhaijaan2-SemiBold.ttf",
+				iOSApp.swift,
+				"Preview Content/Preview Assets.xcassets",
+				screens/FeedView.swift,
+				screens/HomeView.swift,
+				screens/LoginView.swift,
+				screens/MyReportsView.swift,
+				screens/ProfileView.swift,
+				screens/RegisterView.swift,
+				SessionStore.swift,
+				vm/ProfileViewModel.swift,
 			);
 			target = B9DA97B02DC1472C00A4DA20 /* iosApp */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		B9DA97B32DC1472C00A4DA20 /* iosApp */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				B99700CA2DC9B8D800C7335B /* Exceptions for "iosApp" folder in "iosApp" target */,
-			);
-			path = iosApp;
-			sourceTree = "<group>";
-		};
 		B9DA98002DC14AA900A4DA20 /* Configuration */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Configuration;
+			sourceTree = "<group>";
+		};
+		C43A864B2E4135DC0064FAF9 /* iosApp */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				C43A865F2E4135DC0064FAF9 /* Exceptions for "iosApp" folder in "iosApp" target */,
+			);
+			path = iosApp;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -58,6 +79,7 @@
 				D716FEBF2E2F8EE200186367 /* FirebaseCore in Frameworks */,
 				D716FEC12E2F8EE200186367 /* FirebaseFirestore in Frameworks */,
 				D716FEB92E2F8D0C00186367 /* FirebaseAnalytics in Frameworks */,
+				C43A86002E4134AA0064FAF9 /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -67,8 +89,8 @@
 		B9DA97A82DC1472C00A4DA20 = {
 			isa = PBXGroup;
 			children = (
+				C43A864B2E4135DC0064FAF9 /* iosApp */,
 				B9DA98002DC14AA900A4DA20 /* Configuration */,
-				B9DA97B32DC1472C00A4DA20 /* iosApp */,
 				B9DA97B22DC1472C00A4DA20 /* Products */,
 				D716FEB62E2F8CCB00186367 /* GoogleService-Info.plist */,
 			);
@@ -98,9 +120,6 @@
 			);
 			dependencies = (
 			);
-			fileSystemSynchronizedGroups = (
-				B9DA97B32DC1472C00A4DA20 /* iosApp */,
-			);
 			name = iosApp;
 			packageProductDependencies = (
 				D716FEB82E2F8D0C00186367 /* FirebaseAnalytics */,
@@ -108,6 +127,7 @@
 				D716FEBC2E2F8EE200186367 /* FirebaseAuth */,
 				D716FEBE2E2F8EE200186367 /* FirebaseCore */,
 				D716FEC02E2F8EE200186367 /* FirebaseFirestore */,
+				C43A85FF2E4134AA0064FAF9 /* Lottie */,
 				D716FF172E3A3B6D00186367 /* Cloudinary */,
 			);
 			productName = iosApp;
@@ -140,6 +160,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				D7DF6A8D2E2F68230084F3A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				C43A85FE2E4134AA0064FAF9 /* XCRemoteSwiftPackageReference "lottie-spm" */,
 				D716FF162E3A3B6D00186367 /* XCRemoteSwiftPackageReference "cloudinary_ios" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -405,6 +426,12 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		C43A85FE2E4134AA0064FAF9 /* XCRemoteSwiftPackageReference "lottie-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-spm.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.5.2;
 		D716FF162E3A3B6D00186367 /* XCRemoteSwiftPackageReference "cloudinary_ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/cloudinary/cloudinary_ios.git";
@@ -424,6 +451,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		C43A85FF2E4134AA0064FAF9 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C43A85FE2E4134AA0064FAF9 /* XCRemoteSwiftPackageReference "lottie-spm" */;
+			productName = Lottie;
+		};
 		D716FEB82E2F8D0C00186367 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = D7DF6A8D2E2F68230084F3A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;

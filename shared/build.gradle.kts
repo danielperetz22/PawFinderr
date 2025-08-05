@@ -33,6 +33,7 @@ kotlin {
             implementation("com.google.firebase:firebase-auth-ktx:22.1.0")
             implementation("com.google.firebase:firebase-firestore-ktx:24.2.1")
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.1")
+            implementation("com.airbnb.android:lottie-compose:6.0.0")
             implementation("io.insert-koin:koin-android:4.0.4")
             implementation("io.insert-koin:koin-androidx-compose:4.0.4")
         }

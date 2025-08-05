@@ -103,6 +103,7 @@ dependencies {
     implementation(libs.firebase.common)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+    implementation(libs.lottie.compose)
     implementation(libs.material3)
     implementation(libs.androidx.material)
     implementation(libs.koin.core)
