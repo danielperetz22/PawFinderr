@@ -10,4 +10,6 @@ interface ReportRepository {
         isLost: Boolean,
         location: String? = null
     )
+
+    suspend fun getReportsForUser(userId: String): List<ReportModel>
 }

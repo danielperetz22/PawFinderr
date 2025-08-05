@@ -1,8 +1,9 @@
 package org.example.project.data.report
 
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.firestore.*
 import org.example.project.data.firebase.FirebaseRepository
 import org.example.project.data.firebase.RemoteFirebaseRepository
-import org.example.project.data.report.ReportRepository
 
 class ReportRepositoryImpl(
     private val firebase: FirebaseRepository = RemoteFirebaseRepository()
@@ -17,4 +18,7 @@ class ReportRepositoryImpl(
     ) {
         firebase.saveReport(description, name, phone, imageUrl, isLost, location)
     }
+
+    override suspend fun getReportsForUser(userId: String): List<ReportModel> =
+        firebase.getReportsForUser(userId)
 }

@@ -4,17 +4,15 @@ package org.example.project.data.firebase
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.*
 import dev.gitlive.firebase.firestore.*
-import dev.gitlive.firebase.initialize
+import org.example.project.data.report.ReportModel
 
 class RemoteFirebaseRepository : FirebaseRepository {
 
     override suspend fun signUp(email: String, password: String) {
-        // יוצר חשבון חדש ב‑Firebase Auth
         Firebase.auth.createUserWithEmailAndPassword(email, password)
     }
 
     override suspend fun signIn(email: String, password: String) {
-        // מתחבר חשבון קיים
         Firebase.auth.signInWithEmailAndPassword(email, password)
     }
 
@@ -22,7 +20,6 @@ class RemoteFirebaseRepository : FirebaseRepository {
         Firebase.auth.currentUser?.uid
 
     override suspend fun saveUserProfile(uid: String, email: String) {
-        // שומר מסמך משתמש ב‑Firestore תחת collection “users”
         Firebase.firestore
             .collection("users")
             .document(uid)
@@ -44,12 +41,10 @@ class RemoteFirebaseRepository : FirebaseRepository {
         isLost: Boolean,
         location: String?
     ) {
-        // ① get the current user’s UID
         val userId = Firebase.auth.currentUser
             ?.uid
             ?: throw IllegalStateException("No authenticated user!")
 
-        // ② write a document that includes userId
         Firebase.firestore
             .collection("reports")
             .add(
@@ -63,5 +58,21 @@ class RemoteFirebaseRepository : FirebaseRepository {
                     "location"    to location
                 )
             )
+    }
+    override suspend fun getReportsForUser(userId: String): List<ReportModel> {
+        val snapshot = Firebase.firestore
+            .collection("reports")
+            .where { "userId" equalTo userId }
+            .get()
+
+        println("⚙️ [KMM] Queried ${snapshot.documents.size} docs for $userId")
+        return snapshot.documents.mapNotNull { doc ->
+            try {
+                doc.data<ReportModel>()
+                    .copy(id = doc.id)
+            } catch (_: Exception) {
+                null
+            }
+        }
     }
 }

@@ -30,6 +30,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import org.example.project.data.report.ReportUiState
+import org.example.project.ui.report.MyReportsScreen
 
 
 class MainActivity : ComponentActivity() {
@@ -146,7 +147,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         // 6) reports
-                        composable("reports") {
+                        composable("newreport") {
                             // 1️⃣ Create the shared ViewModel just once:
                             val reportVm = remember { ReportViewModel() }
 
@@ -168,7 +169,28 @@ class MainActivity : ComponentActivity() {
                                     location    = null
                                 )
                             }
+                        }
+                        composable("reports") {
+                            val reportVm = remember { ReportViewModel() }
+                            val userVm: AndroidUserViewModel = viewModel()
+                            val currentUid by userVm.currentUid.collectAsState()
 
+                            LaunchedEffect(currentUid) {
+                                println("▶️ Compose sees currentUid = $currentUid")
+
+                                currentUid?.let { reportVm.loadReportsForUser(it) }
+                            }
+
+                            val uiState by reportVm.uiState.collectAsState()
+                            val reports = when (uiState) {
+                                is ReportUiState.ReportsLoaded -> (uiState as ReportUiState.ReportsLoaded).reports
+                                else                           -> emptyList()
+                            }
+
+                            MyReportsScreen(
+                                reports = reports,
+                                onPublishClicked = { navController.navigate("newreport") }
+                            )
                         }
                     }
                 }
