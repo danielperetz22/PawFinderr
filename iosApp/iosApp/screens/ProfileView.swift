@@ -72,7 +72,7 @@ struct ProfileView: View {
                     }
                 }
         .overlay {
-                    if vm.isLoading {
+                    if vm.isLoading || session.isLoading {
                         Color.black.opacity(0.3).ignoresSafeArea()
                         DogLoaderView()
                     }
