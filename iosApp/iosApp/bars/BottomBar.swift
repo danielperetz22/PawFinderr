@@ -52,6 +52,6 @@ struct BottomBar: View {
         }
     }
 }
-#Preview {
-    BottomBar()
-}
+//#Preview {
+//    BottomBar()
+//}

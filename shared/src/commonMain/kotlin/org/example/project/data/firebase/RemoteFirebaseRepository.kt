@@ -26,10 +26,12 @@ class RemoteFirebaseRepository : FirebaseRepository {
         Firebase.firestore
             .collection("users")
             .document(uid)
-            .set(mapOf(
-                "uid" to uid,
-                "email" to email
-            ))
+            .set(
+                mapOf(
+                    "uid" to uid,
+                    "email" to email
+                )
+            )
     }
 
     override suspend fun signOut() {
@@ -54,17 +56,16 @@ class RemoteFirebaseRepository : FirebaseRepository {
             .collection("reports")
             .add(
                 mapOf(
-                    "userId"      to userId,
+                    "userId" to userId,
                     "description" to description,
-                    "name"        to name,
-                    "phone"       to phone,
-                    "imageUrl"    to imageUrl,
-                    "isLost"      to isLost,
-                    "location"    to location
+                    "name" to name,
+                    "phone" to phone,
+                    "imageUrl" to imageUrl,
+                    "isLost" to isLost,
+                    "location" to location
                 )
             )
     }
-}
 
     override fun currentUserEmail(): String? =
         Firebase.auth.currentUser?.email
@@ -73,4 +74,5 @@ class RemoteFirebaseRepository : FirebaseRepository {
         Firebase.auth.currentUser
             ?.updatePassword(newPassword)
             ?: throw IllegalStateException("No signed-in user")
-    }}
+    }
+}

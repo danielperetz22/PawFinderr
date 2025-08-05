@@ -32,6 +32,10 @@
 				components/DogLoaderView.swift,
 				components/long_dog.json,
 				ContentView.swift,
+				"data+api/CloudinaryManager.swift",
+				"data+api/CloudinaryUploader.swift",
+				"data+api/ImageView.swift",
+				"data+api/ReportsContainerView.swift",
 				"Fonts/BalooBhaijaan2-Bold.ttf",
 				"Fonts/BalooBhaijaan2-ExtraBold.ttf",
 				"Fonts/BalooBhaijaan2-Medium.ttf",
@@ -43,6 +47,7 @@
 				screens/HomeView.swift,
 				screens/LoginView.swift,
 				screens/MyReportsView.swift,
+				screens/NewReportView.swift,
 				screens/ProfileView.swift,
 				screens/RegisterView.swift,
 				SessionStore.swift,
@@ -432,8 +437,8 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 4.5.2;
-                };
-            };
+			};
+		};
 		D716FF162E3A3B6D00186367 /* XCRemoteSwiftPackageReference "cloudinary_ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/cloudinary/cloudinary_ios.git";
