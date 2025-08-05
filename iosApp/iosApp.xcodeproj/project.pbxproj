@@ -432,6 +432,8 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 4.5.2;
+                };
+            };
 		D716FF162E3A3B6D00186367 /* XCRemoteSwiftPackageReference "cloudinary_ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/cloudinary/cloudinary_ios.git";
