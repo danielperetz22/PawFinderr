@@ -109,7 +109,8 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
     implementation(libs.cloudinary.android)
-
+    implementation(libs.coil.compose.v300)
+    implementation(libs.coil.network.okhttp.v300)
 
 }
 

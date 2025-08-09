@@ -6,6 +6,8 @@ import dev.gitlive.firebase.auth.*
 import dev.gitlive.firebase.firestore.*
 import org.example.project.data.report.ReportModel
 
+
+
 class RemoteFirebaseRepository : FirebaseRepository {
 
     override suspend fun signUp(email: String, password: String) {
@@ -23,10 +25,12 @@ class RemoteFirebaseRepository : FirebaseRepository {
         Firebase.firestore
             .collection("users")
             .document(uid)
-            .set(mapOf(
-                "uid" to uid,
-                "email" to email
-            ))
+            .set(
+                mapOf(
+                    "uid" to uid,
+                    "email" to email
+                )
+            )
     }
 
     override suspend fun signOut() {
@@ -49,16 +53,17 @@ class RemoteFirebaseRepository : FirebaseRepository {
             .collection("reports")
             .add(
                 mapOf(
-                    "userId"      to userId,
+                    "userId" to userId,
                     "description" to description,
-                    "name"        to name,
-                    "phone"       to phone,
-                    "imageUrl"    to imageUrl,
-                    "isLost"      to isLost,
-                    "location"    to location
+                    "name" to name,
+                    "phone" to phone,
+                    "imageUrl" to imageUrl,
+                    "isLost" to isLost,
+                    "location" to location
                 )
             )
     }
+
     override suspend fun getReportsForUser(userId: String): List<ReportModel> {
         val snapshot = Firebase.firestore
             .collection("reports")
@@ -66,13 +71,40 @@ class RemoteFirebaseRepository : FirebaseRepository {
             .get()
 
         println("⚙️ [KMM] Queried ${snapshot.documents.size} docs for $userId")
-        return snapshot.documents.mapNotNull { doc ->
+
+        val results = mutableListOf<ReportModel>()
+        for (doc in snapshot.documents) {
             try {
-                doc.data<ReportModel>()
-                    .copy(id = doc.id)
-            } catch (_: Exception) {
-                null
+                val m = doc.data(ReportModel.serializer()).copy(id = doc.id)
+                results += m
+            } catch (e: Exception) {
+                // last-ditch fallback that cannot throw on nulls
+                val raw = try { doc.data() as? Map<String, Any?> ?: emptyMap() } catch (_: Throwable) { emptyMap() }
+
+                val description = raw["description"]?.toString().orEmpty()
+                val name        = raw["name"]?.toString().orEmpty()
+                val phone       = raw["phone"]?.toString().orEmpty()
+                val imageUrl    = raw["imageUrl"]?.toString().orEmpty()
+                val isLost      = (raw["isLost"] as? Boolean) ?: false
+                val location    = raw["location"]?.toString()
+                val uidInDoc    = raw["userId"]?.toString().orEmpty()
+
+                println("DBG ${doc.id}: name='$name', image='$imageUrl'")
+                results += ReportModel(
+                    id = doc.id,
+                    userId = uidInDoc,
+                    description = description,
+                    name = name,
+                    phone = phone,
+                    imageUrl = imageUrl,
+                    isLost = isLost,
+                    location = location
+                )
             }
         }
+
+        println("✅ loaded ${results.size} reports")
+        return results
     }
+
 }

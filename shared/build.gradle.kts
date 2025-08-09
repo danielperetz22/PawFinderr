@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.kotlin.serialization)
 
 }
 
@@ -40,17 +41,15 @@ kotlin {
             implementation(project.dependencies.platform(libs.firebase.bom))
             implementation("dev.gitlive:firebase-app:2.1.0")       // מכיל את ה‑Firebase object + initialize
             implementation("dev.gitlive:firebase-auth:2.1.0")      // אימות באמצעות מייל/סיסמה
-            implementation("dev.gitlive:firebase-firestore:2.1.0")
             implementation("dev.gitlive:firebase-app:2.1.0")
-            implementation("dev.gitlive:firebase-auth:2.1.0")
             implementation("dev.gitlive:firebase-firestore:2.1.0")
             implementation("dev.gitlive:firebase-common:2.1.0")
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
             api("io.insert-koin:koin-core:4.0.4")
             implementation("io.insert-koin:koin-compose:4.0.4")
             implementation("io.insert-koin:koin-test:4.0.4")
-            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
-
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+            implementation("dev.gitlive:firebase-firestore:1.13.1")
 
 
         }

@@ -6,8 +6,9 @@ import org.example.project.data.firebase.FirebaseRepository
 import org.example.project.data.firebase.RemoteFirebaseRepository
 
 class ReportRepositoryImpl(
-    private val firebase: FirebaseRepository = RemoteFirebaseRepository()
+    private val firebase: FirebaseRepository
 ) : ReportRepository {
+    constructor() : this(RemoteFirebaseRepository())
     override suspend fun saveReport(
         description: String,
         name: String,
