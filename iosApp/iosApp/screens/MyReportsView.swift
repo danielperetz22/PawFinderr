@@ -72,7 +72,8 @@ struct MyReportsView: View {
                 self.errorText = err.localizedDescription
                 return
             }
-            self.reports = (list ?? []).sorted(by: { $0.id > $1.id })
+            self.reports = list ?? []
+
         }
     }
 }

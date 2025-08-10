@@ -41,13 +41,10 @@ class ReportViewModel(
     fun loadReportsForUser(userId: String) {
         scope.launch {
             _uiState.value = ReportUiState.LoadingReports
-            println("▶️ loading reports for $userId")
             try {
                 val list = repo.getReportsForUser(userId)
-                println("✅ loaded ${list.size} reports")
                 _uiState.value = ReportUiState.ReportsLoaded(list)
             } catch (e: Throwable) {
-                println("❌ load error: ${e.message}")
                 _uiState.value = ReportUiState.LoadError(e)
             }
         }

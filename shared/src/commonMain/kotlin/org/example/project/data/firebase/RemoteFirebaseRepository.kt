@@ -5,6 +5,8 @@ import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.*
 import dev.gitlive.firebase.firestore.*
 import org.example.project.data.report.ReportModel
+import kotlinx.datetime.Clock
+
 
 
 
@@ -59,18 +61,19 @@ class RemoteFirebaseRepository : FirebaseRepository {
                     "phone" to phone,
                     "imageUrl" to imageUrl,
                     "isLost" to isLost,
-                    "location" to location
+                    "location" to location,
+                    "createdAt" to Clock.System.now().toEpochMilliseconds()
                 )
             )
     }
 
+    // shared RemoteFirebaseRepository
     override suspend fun getReportsForUser(userId: String): List<ReportModel> {
         val snapshot = Firebase.firestore
             .collection("reports")
             .where { "userId" equalTo userId }
+            // .orderBy("createdAt", Direction.DESCENDING)   // TEMPORARILY DISABLE
             .get()
-
-        println("⚙️ [KMM] Queried ${snapshot.documents.size} docs for $userId")
 
         val results = mutableListOf<ReportModel>()
         for (doc in snapshot.documents) {
@@ -78,33 +81,24 @@ class RemoteFirebaseRepository : FirebaseRepository {
                 val m = doc.data(ReportModel.serializer()).copy(id = doc.id)
                 results += m
             } catch (e: Exception) {
-                // last-ditch fallback that cannot throw on nulls
                 val raw = try { doc.data() as? Map<String, Any?> ?: emptyMap() } catch (_: Throwable) { emptyMap() }
-
-                val description = raw["description"]?.toString().orEmpty()
-                val name        = raw["name"]?.toString().orEmpty()
-                val phone       = raw["phone"]?.toString().orEmpty()
-                val imageUrl    = raw["imageUrl"]?.toString().orEmpty()
-                val isLost      = (raw["isLost"] as? Boolean) ?: false
-                val location    = raw["location"]?.toString()
-                val uidInDoc    = raw["userId"]?.toString().orEmpty()
-
-                println("DBG ${doc.id}: name='$name', image='$imageUrl'")
                 results += ReportModel(
-                    id = doc.id,
-                    userId = uidInDoc,
-                    description = description,
-                    name = name,
-                    phone = phone,
-                    imageUrl = imageUrl,
-                    isLost = isLost,
-                    location = location
+                    id          = doc.id,
+                    userId      = raw["userId"]?.toString().orEmpty(),
+                    description = raw["description"]?.toString().orEmpty(),
+                    name        = raw["name"]?.toString().orEmpty(),
+                    phone       = raw["phone"]?.toString().orEmpty(),
+                    imageUrl    = raw["imageUrl"]?.toString().orEmpty(),
+                    isLost      = (raw["isLost"] as? Boolean) ?: false,
+                    location    = raw["location"]?.toString(),
+                    createdAt   = (raw["createdAt"] as? Number)?.toLong() ?: 0L
                 )
             }
         }
 
-        println("✅ loaded ${results.size} reports")
-        return results
+        // newest first on client
+        return results.sortedByDescending { it.createdAt }
     }
+
 
 }

@@ -11,5 +11,6 @@ data class ReportModel(
     val phone: String = "",
     val imageUrl: String = "",
     val isLost: Boolean = false,
-    val location: String? = null
+    val location: String? = null,
+    val createdAt: Long = 0L
 )

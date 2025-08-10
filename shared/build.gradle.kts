@@ -39,6 +39,7 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(project.dependencies.platform(libs.firebase.bom))
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
             implementation("dev.gitlive:firebase-app:2.1.0")       // מכיל את ה‑Firebase object + initialize
             implementation("dev.gitlive:firebase-auth:2.1.0")      // אימות באמצעות מייל/סיסמה
             implementation("dev.gitlive:firebase-app:2.1.0")

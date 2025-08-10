@@ -1,7 +1,6 @@
 package org.example.project.data.report
 
-import dev.gitlive.firebase.Firebase
-import dev.gitlive.firebase.firestore.*
+
 import org.example.project.data.firebase.FirebaseRepository
 import org.example.project.data.firebase.RemoteFirebaseRepository
 

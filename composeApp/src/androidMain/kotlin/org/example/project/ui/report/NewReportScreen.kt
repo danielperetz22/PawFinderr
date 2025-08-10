@@ -17,14 +17,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
 import org.example.project.R
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
 import android.content.ContentValues
 import android.net.Uri
 import android.provider.MediaStore
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.LocalContext
@@ -33,7 +31,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.rememberAsyncImagePainter
 import org.example.project.CloudinaryUploader
-import androidx.lifecycle.viewmodel.compose.viewModel
 
 private val balooBhaijaan2Family = FontFamily(
     Font(R.font.baloobhaijaan2_regular,   FontWeight.Normal),
