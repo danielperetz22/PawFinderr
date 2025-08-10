@@ -5,15 +5,14 @@ struct MyReportsView: View {
     @State private var reports: [ReportModel] = []
     @State private var isLoading = false
     @State private var errorText: String?
-    @State private var showNewReport = false   // ← added
-
+    @State private var showNewReport = false
 
     private let repo = ReportRepositoryImpl()
     private let auth = RemoteFirebaseRepository()
 
     var body: some View {
         ZStack {
-            Color(white: 0.95).ignoresSafeArea()
+            Color("BackgroundGray").ignoresSafeArea() // ← app background color
 
             if isLoading {
                 ProgressView().scaleEffect(1.2)
@@ -31,8 +30,8 @@ struct MyReportsView: View {
                 }
                 .listStyle(.plain)
             }
-            
-            // ↓↓↓ added: floating + button
+
+            // Floating + button
             VStack {
                 Spacer()
                 HStack {
@@ -44,7 +43,7 @@ struct MyReportsView: View {
                             .font(.system(size: 22, weight: .bold))
                             .foregroundColor(.white)
                             .padding(18)
-                            .background(Color.blue)
+                            .background(Color("SecondaryPink")) // ← match app color
                             .clipShape(Circle())
                             .shadow(radius: 4)
                     }
@@ -52,12 +51,11 @@ struct MyReportsView: View {
                     .padding(.bottom, 24)
                 }
             }
-            // ↑↑↑
         }
         .onAppear { loadReports() }
-        .sheet(isPresented: $showNewReport) {   // ← added
-                  ReportsContainerView()
-              }
+        .sheet(isPresented: $showNewReport) {
+            ReportsContainerView()
+        }
     }
 
     private func loadReports() {
@@ -74,7 +72,7 @@ struct MyReportsView: View {
                 self.errorText = err.localizedDescription
                 return
             }
-            self.reports = (list ?? []).sorted(by: { $0.id > $1.id }) // newest first
+            self.reports = (list ?? []).sorted(by: { $0.id > $1.id })
         }
     }
 }
@@ -83,43 +81,48 @@ struct ReportRow: View {
     let report: ReportModel
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 14) { // a bit more spacing
             if !report.imageUrl.isEmpty, let url = URL(string: report.imageUrl) {
                 AsyncImage(url: url) { img in img.resizable() } placeholder: {
                     Color.gray.opacity(0.2)
                 }
-                .frame(width: 72, height: 72)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .frame(width: 88, height: 88) // bigger image
+                .clipShape(RoundedRectangle(cornerRadius: 14))
             }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(report.name.isEmpty ? "Untitled" : report.name)
                     .font(.headline)
 
-                let desc = report.description_   // Swift name for Kotlin `description`
+                let desc = report.description_
                 if !desc.isEmpty {
                     Text(desc)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
-                        .lineLimit(1)
+                        .lineLimit(2) // show a bit more text
                 }
 
                 HStack {
                     Text(report.isLost ? "Lost" : "Found")
                         .font(.caption)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Capsule().stroke(.primary, lineWidth: 1))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color("PrimaryPink")) // match app style
+                        .foregroundColor(.white)
+                        .clipShape(Capsule())
+
                     if !report.phone.isEmpty {
-                        Text(report.phone).font(.caption)
+                        Text(report.phone)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
                 }
             }
             Spacer()
         }
-        .padding(10)
+        .padding(14) // bigger padding
         .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 2)
+        .cornerRadius(14)
+        .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 3)
     }
 }
