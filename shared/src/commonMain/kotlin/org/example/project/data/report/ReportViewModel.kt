@@ -6,19 +6,19 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-
 class ReportViewModel(
-
     private val repo: ReportRepository = ReportRepositoryImpl(),
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 ) {
     private val _uiState = MutableStateFlow<ReportUiState>(ReportUiState.Idle)
     val uiState: StateFlow<ReportUiState> = _uiState.asStateFlow()
-    @Suppress("unused")  // so the compiler won’t warn
+
+    @Suppress("unused")
     constructor() : this(
         ReportRepositoryImpl(),
         CoroutineScope(Dispatchers.Default + SupervisorJob())
     )
+
     fun saveReport(
         description: String,
         name: String,
@@ -31,9 +31,21 @@ class ReportViewModel(
             _uiState.value = ReportUiState.Saving
             try {
                 repo.saveReport(description, name, phone, imageUrl, isLost, location)
-                _uiState.value = ReportUiState.Success
+                _uiState.value = ReportUiState.SaveSuccess
             } catch (e: Throwable) {
-                _uiState.value = ReportUiState.Error(e)
+                _uiState.value = ReportUiState.SaveError(e)
+            }
+        }
+    }
+
+    fun loadReportsForUser(userId: String) {
+        scope.launch {
+            _uiState.value = ReportUiState.LoadingReports
+            try {
+                val list = repo.getReportsForUser(userId)
+                _uiState.value = ReportUiState.ReportsLoaded(list)
+            } catch (e: Throwable) {
+                _uiState.value = ReportUiState.LoadError(e)
             }
         }
     }

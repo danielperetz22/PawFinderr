@@ -1,5 +1,7 @@
 package org.example.project
 
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,12 +30,15 @@ import org.example.project.ui.home.AndroidUserViewModel
 import org.example.project.ui.feed.FeedScreen
 import org.example.project.ui.report.NewReportScreen
 import org.example.project.data.report.ReportViewModel
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import org.example.project.data.report.ReportModel
 import org.example.project.data.report.ReportUiState
+import org.example.project.ui.report.MyReportsScreen
+import org.example.project.ui.report.ReportDetailsScreen
+import java.net.URLDecoder
 
 
+@Suppress("NAME_SHADOWING")
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -166,19 +171,15 @@ class MainActivity : ComponentActivity() {
 
 
                         // 6) reports
-                        composable("reports") {
-                            // 1️⃣ Create the shared ViewModel just once:
+                        composable("new-report") {
                             val reportVm = remember { ReportViewModel() }
-
-                            // 2️⃣ Observe its UI-state so you can show loading/success/errors if you like:
                             val uiState by reportVm.uiState.collectAsState()
 
-                            // 3️⃣ Render your screen, passing in the save callback:
+                            // Your screen
                             NewReportScreen(
-                                onImagePicked = { /* no change here */ },
-                                onAddLocation = { /* optional for later */ }
+                                onImagePicked = { /* ... */ },
+                                onAddLocation = { /* ... */ }
                             ) { description, name, phone, isLost, imageUrl ->
-                                // this will fire after Cloudinary returns a URL:
                                 reportVm.saveReport(
                                     description = description,
                                     name        = name,
@@ -189,8 +190,56 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
 
+                            // When save succeeds, go back to "reports"
+                            LaunchedEffect(uiState) {
+                                if (uiState is ReportUiState.SaveSuccess) {
+                                    navController.navigate("reports") {
+                                        // recreate the screen so it reloads the list
+                                        popUpTo("reports") { inclusive = true }
+                                    }
+                                }
+                            }
+                        }
+
+                        composable("reports") {
+                            val reportVm = remember { ReportViewModel() }
+                            val userVm: AndroidUserViewModel = viewModel()
+                            val currentUid by userVm.currentUid.collectAsState()
+
+                            LaunchedEffect(currentUid) {
+                                println("▶️ Compose sees currentUid = $currentUid")
+
+                                currentUid?.let { reportVm.loadReportsForUser(it) }
+                            }
+
+                            val uiState by reportVm.uiState.collectAsState()
+                            val reports = when (uiState) {
+                                is ReportUiState.ReportsLoaded -> (uiState as ReportUiState.ReportsLoaded).reports
+                                else                           -> emptyList()
+                            }
+
+                            MyReportsScreen(
+                                reports = reports,
+                                onPublishClicked = { navController.navigate("new-report") },
+                                onItemClick = { rpt ->
+                                    val json = kotlinx.serialization.json.Json.encodeToString(rpt)
+                                    val encoded = java.net.URLEncoder.encode(json, Charsets.UTF_8.name())
+                                    navController.navigate("report-details/$encoded")
+                                }
+                            )
+                        }
+                        composable("report-details/{reportJson}") { backStackEntry ->
+                            val raw = backStackEntry.arguments?.getString("reportJson").orEmpty()
+                            val decoded = URLDecoder.decode(raw, Charsets.UTF_8.name())
+                            val report = Json.decodeFromString<ReportModel>(decoded)
+
+                            ReportDetailsScreen(
+                                report = report,
+                                onBack = { navController.popBackStack() }
+                            )
                         }
                     }
+
                 }
             }
         }

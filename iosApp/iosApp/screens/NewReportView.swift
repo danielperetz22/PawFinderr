@@ -2,6 +2,8 @@ import SwiftUI
 import Shared
 
 struct NewReportView: View {
+    @Environment(\.dismiss) private var dismiss  
+
     // MARK: – State
     @State private var isLost: Bool = true
     @State private var description: String = ""
@@ -161,41 +163,34 @@ struct NewReportView: View {
                 // MARK: Publish Report
                 Button {
                     guard let uiImage = selectedImage,
-                                let jpegData = uiImage.jpegData(compressionQuality: 0.8)
-                          else { return }
+                    let jpegData = uiImage.jpegData(compressionQuality: 0.8)
+                    else { return }
 
-                          isUploading = true
-                          CloudinaryUploader.upload(jpegData) { url in
-                            DispatchQueue.main.async {
-                              isUploading = false
-                              if let imageUrl = url {
-                                // ① call your callback with *all* the fields:
-                                onPublish(
-                                  description,
-                                  name,
-                                  phone,
-                                  isLost,
-                                  imageUrl
-                                )
-                                 
-                              }
-                            }
-                          }
-                }label: {
-                    // 2️⃣ Label
-                    if isUploading {
-                      ProgressView()
-                        .progressViewStyle(.circular)
-                        .frame(width: 24, height: 24)
-                    } else {
-                      Text("Publish Report")
-                        .font(.custom("BalooBhaijaan2-Bold", size: 16))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity, minHeight: 48)
-                        .background(Color("PrimaryPink"))
-                        .cornerRadius(8)
+                     isUploading = true
+                     CloudinaryUploader.upload(jpegData) { url in
+                     DispatchQueue.main.async {
+                     isUploading = false
+                     if let imageUrl = url {
+                     onPublish(description, name, phone, isLost, imageUrl)
+                      dismiss() // ← Close the sheet after publishing
+                        }
                     }
                 }
+            } label: {
+                    // 2️⃣ Label
+                if isUploading {
+                                        ProgressView()
+                                            .progressViewStyle(.circular)
+                                            .frame(width: 24, height: 24)
+                                    } else {
+                                        Text("Publish Report")
+                                            .font(.custom("BalooBhaijaan2-Bold", size: 16))
+                                            .foregroundColor(.white)
+                                            .frame(maxWidth: .infinity, minHeight: 48)
+                                            .background(Color("PrimaryPink"))
+                                            .cornerRadius(8)
+                                    }
+                                }
                 // 3️⃣ Modifiers go here, no trailing closure:
                 .disabled(selectedImage == nil || isUploading)
                 

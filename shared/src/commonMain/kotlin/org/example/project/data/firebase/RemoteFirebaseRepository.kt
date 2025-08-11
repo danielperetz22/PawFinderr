@@ -4,7 +4,11 @@ package org.example.project.data.firebase
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.*
 import dev.gitlive.firebase.firestore.*
-import dev.gitlive.firebase.initialize
+import org.example.project.data.report.ReportModel
+import kotlinx.datetime.Clock
+
+
+
 
 class RemoteFirebaseRepository : FirebaseRepository {
 
@@ -38,6 +42,16 @@ class RemoteFirebaseRepository : FirebaseRepository {
         Firebase.auth.signOut()
     }
 
+    override fun currentUserEmail(): String? =
+        Firebase.auth.currentUser?.email
+
+    override suspend fun updatePassword(newPassword: String) {
+        Firebase.auth.currentUser
+            ?.updatePassword(newPassword)
+            ?: throw IllegalStateException("No signed-in user")
+    }
+
+
     override suspend fun saveReport(
         description: String,
         name: String,
@@ -58,21 +72,47 @@ class RemoteFirebaseRepository : FirebaseRepository {
                 mapOf(
                     "userId" to userId,
                     "description" to description,
-                    "name" to name,
-                    "phone" to phone,
-                    "imageUrl" to imageUrl,
-                    "isLost" to isLost,
-                    "location" to location
+                    "name"        to name,
+                    "phone"       to phone,
+                    "imageUrl"    to imageUrl,
+                    "isLost"      to isLost,
+                    "location"    to location
                 )
             )
     }
 
-    override fun currentUserEmail(): String? =
-        Firebase.auth.currentUser?.email
+    // shared RemoteFirebaseRepository
+    override suspend fun getReportsForUser(userId: String): List<ReportModel> {
+        val snapshot = Firebase.firestore
+            .collection("reports")
+            .where { "userId" equalTo userId }
+            // .orderBy("createdAt", Direction.DESCENDING)   // TEMPORARILY DISABLE
+            .get()
 
-    override suspend fun updatePassword(newPassword: String) {
-        Firebase.auth.currentUser
-            ?.updatePassword(newPassword)
-            ?: throw IllegalStateException("No signed-in user")
+        val results = mutableListOf<ReportModel>()
+        for (doc in snapshot.documents) {
+            try {
+                val m = doc.data(ReportModel.serializer()).copy(id = doc.id)
+                results += m
+            } catch (e: Exception) {
+                val raw = try { doc.data() as? Map<String, Any?> ?: emptyMap() } catch (_: Throwable) { emptyMap() }
+                results += ReportModel(
+                    id          = doc.id,
+                    userId      = raw["userId"]?.toString().orEmpty(),
+                    description = raw["description"]?.toString().orEmpty(),
+                    name        = raw["name"]?.toString().orEmpty(),
+                    phone       = raw["phone"]?.toString().orEmpty(),
+                    imageUrl    = raw["imageUrl"]?.toString().orEmpty(),
+                    isLost      = (raw["isLost"] as? Boolean) ?: false,
+                    location    = raw["location"]?.toString(),
+                    createdAt   = (raw["createdAt"] as? Number)?.toLong() ?: 0L
+                )
+            }
+        }
+
+        // newest first on client
+        return results.sortedByDescending { it.createdAt }
     }
+
+
 }

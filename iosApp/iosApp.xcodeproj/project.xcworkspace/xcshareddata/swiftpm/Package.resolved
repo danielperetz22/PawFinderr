@@ -25,8 +25,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/cloudinary/cloudinary_ios.git",
       "state" : {
-        "revision" : "aa29e0f66e0b15286396a03f81cf1f1bb9276a37",
-        "version" : "5.2.1"
+        "revision" : "aead0d344c9bd8d48f3af24a93b0a9ade4e9dc59",
+        "version" : "5.2.2"
       }
     },
     {
@@ -34,8 +34,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/firebase/firebase-ios-sdk.git",
       "state" : {
-        "revision" : "4e62da1e5e6baf61674d3f5ae23d6d60c19f9c4a",
-        "version" : "12.0.0"
+        "revision" : "b9bf3adac18e6e3059167194aeb632f15a5ba4b2",
+        "version" : "12.1.0"
       }
     },
     {
@@ -43,8 +43,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/googleads/google-ads-on-device-conversion-ios-sdk",
       "state" : {
-        "revision" : "428d8bb138e00f9a3f4f61cc6cd8863607524f65",
-        "version" : "2.1.0"
+        "revision" : "e15f979c3eaf477d24e5bfec9d87f1d76fbac297",
+        "version" : "2.2.0"
       }
     },
     {
@@ -52,8 +52,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/google/GoogleAppMeasurement.git",
       "state" : {
-        "revision" : "63c18311aac00032f15f5ce431c9e83ada96c386",
-        "version" : "12.0.0"
+        "revision" : "883305109ead4599e4ca59591754ee72e81e6b5e",
+        "version" : "12.1.0"
       }
     },
     {
@@ -111,11 +111,11 @@
       }
     },
     {
-      "identity" : "lottie-spm",
+      "identity" : "lottie-ios",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/airbnb/lottie-spm.git",
+      "location" : "https://github.com/airbnb/lottie-ios",
       "state" : {
-        "revision" : "04f2fd18cc9404a0a0917265a449002674f24ec9",
+        "revision" : "a004050748dc197c56256a14dca49a035d74726c",
         "version" : "4.5.2"
       }
     },

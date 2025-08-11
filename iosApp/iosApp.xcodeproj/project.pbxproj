@@ -7,14 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C43A86002E4134AA0064FAF9 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = C43A85FF2E4134AA0064FAF9 /* Lottie */; };
 		D716FEB72E2F8CCB00186367 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D716FEB62E2F8CCB00186367 /* GoogleService-Info.plist */; };
-		D716FEB92E2F8D0C00186367 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = D716FEB82E2F8D0C00186367 /* FirebaseAnalytics */; };
-		D716FEBB2E2F8D0C00186367 /* FirebaseAnalyticsIdentitySupport in Frameworks */ = {isa = PBXBuildFile; productRef = D716FEBA2E2F8D0C00186367 /* FirebaseAnalyticsIdentitySupport */; };
-		D716FEBD2E2F8EE200186367 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = D716FEBC2E2F8EE200186367 /* FirebaseAuth */; };
-		D716FEBF2E2F8EE200186367 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = D716FEBE2E2F8EE200186367 /* FirebaseCore */; };
-		D716FEC12E2F8EE200186367 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = D716FEC02E2F8EE200186367 /* FirebaseFirestore */; };
-		D716FF182E3A3B6D00186367 /* Cloudinary in Frameworks */ = {isa = PBXBuildFile; productRef = D716FF172E3A3B6D00186367 /* Cloudinary */; };
+		D74560F12E4779F70069A87B /* Cloudinary in Frameworks */ = {isa = PBXBuildFile; productRef = D74560F02E4779F70069A87B /* Cloudinary */; };
+		D74560F42E477A700069A87B /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = D74560F32E477A700069A87B /* FirebaseAnalytics */; };
+		D74560F82E477A700069A87B /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = D74560F72E477A700069A87B /* FirebaseAuth */; };
+		D74560FA2E477A700069A87B /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = D74560F92E477A700069A87B /* FirebaseCore */; };
+		D74560FC2E477A700069A87B /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = D74560FB2E477A700069A87B /* FirebaseFirestore */; };
+		D74560FF2E477A940069A87B /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = D74560FE2E477A940069A87B /* Lottie */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,52 +22,27 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		C43A865F2E4135DC0064FAF9 /* Exceptions for "iosApp" folder in "iosApp" target */ = {
+		B99700CA2DC9B8D800C7335B /* Exceptions for "iosApp" folder in "iosApp" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Assets.xcassets,
-				bars/BottomBar.swift,
-				bars/TopBar.swift,
-				components/DogLoaderView.swift,
-				components/long_dog.json,
-				ContentView.swift,
-				"data+api/CloudinaryManager.swift",
-				"data+api/CloudinaryUploader.swift",
-				"data+api/ImageView.swift",
-				"data+api/ReportsContainerView.swift",
-				"Fonts/BalooBhaijaan2-Bold.ttf",
-				"Fonts/BalooBhaijaan2-ExtraBold.ttf",
-				"Fonts/BalooBhaijaan2-Medium.ttf",
-				"Fonts/BalooBhaijaan2-Regular.ttf",
-				"Fonts/BalooBhaijaan2-SemiBold.ttf",
-				iOSApp.swift,
-				"Preview Content/Preview Assets.xcassets",
-				screens/FeedView.swift,
-				screens/HomeView.swift,
-				screens/LoginView.swift,
-				screens/MyReportsView.swift,
-				screens/NewReportView.swift,
-				screens/ProfileView.swift,
-				screens/RegisterView.swift,
-				SessionStore.swift,
-				vm/ProfileViewModel.swift,
+				Info.plist,
 			);
 			target = B9DA97B02DC1472C00A4DA20 /* iosApp */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		B9DA97B32DC1472C00A4DA20 /* iosApp */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B99700CA2DC9B8D800C7335B /* Exceptions for "iosApp" folder in "iosApp" target */,
+			);
+			path = iosApp;
+			sourceTree = "<group>";
+		};
 		B9DA98002DC14AA900A4DA20 /* Configuration */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Configuration;
-			sourceTree = "<group>";
-		};
-		C43A864B2E4135DC0064FAF9 /* iosApp */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				C43A865F2E4135DC0064FAF9 /* Exceptions for "iosApp" folder in "iosApp" target */,
-			);
-			path = iosApp;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -78,13 +52,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D716FEBB2E2F8D0C00186367 /* FirebaseAnalyticsIdentitySupport in Frameworks */,
-				D716FEBD2E2F8EE200186367 /* FirebaseAuth in Frameworks */,
-				D716FF182E3A3B6D00186367 /* Cloudinary in Frameworks */,
-				D716FEBF2E2F8EE200186367 /* FirebaseCore in Frameworks */,
-				D716FEC12E2F8EE200186367 /* FirebaseFirestore in Frameworks */,
-				D716FEB92E2F8D0C00186367 /* FirebaseAnalytics in Frameworks */,
-				C43A86002E4134AA0064FAF9 /* Lottie in Frameworks */,
+				D74560F42E477A700069A87B /* FirebaseAnalytics in Frameworks */,
+				D74560FF2E477A940069A87B /* Lottie in Frameworks */,
+				D74560FA2E477A700069A87B /* FirebaseCore in Frameworks */,
+				D74560F12E4779F70069A87B /* Cloudinary in Frameworks */,
+				D74560F82E477A700069A87B /* FirebaseAuth in Frameworks */,
+				D74560FC2E477A700069A87B /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -94,10 +67,11 @@
 		B9DA97A82DC1472C00A4DA20 = {
 			isa = PBXGroup;
 			children = (
-				C43A864B2E4135DC0064FAF9 /* iosApp */,
 				B9DA98002DC14AA900A4DA20 /* Configuration */,
+				B9DA97B32DC1472C00A4DA20 /* iosApp */,
 				B9DA97B22DC1472C00A4DA20 /* Products */,
 				D716FEB62E2F8CCB00186367 /* GoogleService-Info.plist */,
+				D72D70B92E47797C00038BFD /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -107,6 +81,13 @@
 				B9DA97B12DC1472C00A4DA20 /* PawFinderr.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		D72D70B92E47797C00038BFD /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -125,15 +106,17 @@
 			);
 			dependencies = (
 			);
+			fileSystemSynchronizedGroups = (
+				B9DA97B32DC1472C00A4DA20 /* iosApp */,
+			);
 			name = iosApp;
 			packageProductDependencies = (
-				D716FEB82E2F8D0C00186367 /* FirebaseAnalytics */,
-				D716FEBA2E2F8D0C00186367 /* FirebaseAnalyticsIdentitySupport */,
-				D716FEBC2E2F8EE200186367 /* FirebaseAuth */,
-				D716FEBE2E2F8EE200186367 /* FirebaseCore */,
-				D716FEC02E2F8EE200186367 /* FirebaseFirestore */,
-				C43A85FF2E4134AA0064FAF9 /* Lottie */,
-				D716FF172E3A3B6D00186367 /* Cloudinary */,
+				D74560F02E4779F70069A87B /* Cloudinary */,
+				D74560F32E477A700069A87B /* FirebaseAnalytics */,
+				D74560F72E477A700069A87B /* FirebaseAuth */,
+				D74560F92E477A700069A87B /* FirebaseCore */,
+				D74560FB2E477A700069A87B /* FirebaseFirestore */,
+				D74560FE2E477A940069A87B /* Lottie */,
 			);
 			productName = iosApp;
 			productReference = B9DA97B12DC1472C00A4DA20 /* PawFinderr.app */;
@@ -164,9 +147,9 @@
 			mainGroup = B9DA97A82DC1472C00A4DA20;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				D7DF6A8D2E2F68230084F3A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
-				C43A85FE2E4134AA0064FAF9 /* XCRemoteSwiftPackageReference "lottie-spm" */,
-				D716FF162E3A3B6D00186367 /* XCRemoteSwiftPackageReference "cloudinary_ios" */,
+				D74560EF2E4779F70069A87B /* XCRemoteSwiftPackageReference "cloudinary_ios" */,
+				D74560F22E477A700069A87B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				D74560FD2E477A940069A87B /* XCRemoteSwiftPackageReference "lottie-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B9DA97B22DC1472C00A4DA20 /* Products */;
@@ -431,67 +414,62 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		C43A85FE2E4134AA0064FAF9 /* XCRemoteSwiftPackageReference "lottie-spm" */ = {
+		D74560EF2E4779F70069A87B /* XCRemoteSwiftPackageReference "cloudinary_ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/airbnb/lottie-spm.git";
+			repositoryURL = "https://github.com/cloudinary/cloudinary_ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.2.2;
+			};
+		};
+		D74560F22E477A700069A87B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.1.0;
+			};
+		};
+		D74560FD2E477A940069A87B /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 4.5.2;
 			};
 		};
-		D716FF162E3A3B6D00186367 /* XCRemoteSwiftPackageReference "cloudinary_ios" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/cloudinary/cloudinary_ios.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.2.1;
-			};
-		};
-		D7DF6A8D2E2F68230084F3A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 12.0.0;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		C43A85FF2E4134AA0064FAF9 /* Lottie */ = {
+		D74560F02E4779F70069A87B /* Cloudinary */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = C43A85FE2E4134AA0064FAF9 /* XCRemoteSwiftPackageReference "lottie-spm" */;
-			productName = Lottie;
+			package = D74560EF2E4779F70069A87B /* XCRemoteSwiftPackageReference "cloudinary_ios" */;
+			productName = Cloudinary;
 		};
-		D716FEB82E2F8D0C00186367 /* FirebaseAnalytics */ = {
+		D74560F32E477A700069A87B /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = D7DF6A8D2E2F68230084F3A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			package = D74560F22E477A700069A87B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAnalytics;
 		};
-		D716FEBA2E2F8D0C00186367 /* FirebaseAnalyticsIdentitySupport */ = {
+		D74560F72E477A700069A87B /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = D7DF6A8D2E2F68230084F3A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAnalyticsIdentitySupport;
-		};
-		D716FEBC2E2F8EE200186367 /* FirebaseAuth */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = D7DF6A8D2E2F68230084F3A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			package = D74560F22E477A700069A87B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAuth;
 		};
-		D716FEBE2E2F8EE200186367 /* FirebaseCore */ = {
+		D74560F92E477A700069A87B /* FirebaseCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = D7DF6A8D2E2F68230084F3A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			package = D74560F22E477A700069A87B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseCore;
 		};
-		D716FEC02E2F8EE200186367 /* FirebaseFirestore */ = {
+		D74560FB2E477A700069A87B /* FirebaseFirestore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = D7DF6A8D2E2F68230084F3A9 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			package = D74560F22E477A700069A87B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseFirestore;
 		};
-		D716FF172E3A3B6D00186367 /* Cloudinary */ = {
+		D74560FE2E477A940069A87B /* Lottie */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = D716FF162E3A3B6D00186367 /* XCRemoteSwiftPackageReference "cloudinary_ios" */;
-			productName = Cloudinary;
+			package = D74560FD2E477A940069A87B /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
