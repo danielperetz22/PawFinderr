@@ -16,6 +16,8 @@ import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.example.project.R
+import org.example.project.ui.components.LoadingAnimation
+
 
 private val balooBhaijaan2Family = FontFamily(
     Font(R.font.baloobhaijaan2_regular,   FontWeight.Normal),
@@ -34,6 +36,8 @@ fun LoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+
     Box(Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -130,9 +134,16 @@ fun LoginScreen(
 
         }
         if (isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center)
+            Box(
+                Modifier
+                    .matchParentSize()
+                    .background(Color.Black.copy(alpha = 0.3f))
+            )
+            LoadingAnimation(
+                isLoading = isLoading,
+                modifier  = Modifier.matchParentSize()
             )
         }
     }
 }
+

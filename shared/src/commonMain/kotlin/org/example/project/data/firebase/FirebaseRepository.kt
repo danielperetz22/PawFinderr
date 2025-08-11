@@ -8,6 +8,8 @@ interface FirebaseRepository {
     fun currentUserUid(): String?
     suspend fun saveUserProfile(uid: String, email: String)
     suspend fun signOut()
+    fun currentUserEmail(): String?
+    suspend fun updatePassword(newPassword: String)
     suspend fun saveReport(description: String, name: String, phone: String, imageUrl: String, isLost: Boolean, location: String? = null)
     suspend fun getReportsForUser(userId: String): List<ReportModel>
 }

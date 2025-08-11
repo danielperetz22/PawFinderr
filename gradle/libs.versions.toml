@@ -32,6 +32,7 @@ koinCore = "4.0.4"
 kotlin = "2.2.0"
 androidx-glance = "X.Y.Z"
 lifecycleViewmodelCompose = "2.6.1"
+lottieCompose = "6.6.7"
 material = "1.x.x"
 material3 = "1.1.0"
 navigationCompose = "2.5.3"
@@ -80,6 +81,7 @@ androidx-activity-compose = { module = "androidx.activity:activity-compose", ver
 androidx-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "androidx-glance" }
+lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottieCompose" }
 material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 
 [plugins]

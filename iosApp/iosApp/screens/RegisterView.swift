@@ -73,6 +73,9 @@ struct RegisterView: View {
     @State private var password        = ""
     @State private var confirmPassword = ""
     
+    @State private var errorMessage = ""
+    @State private var isLoading = false
+    
     @State private var didRegister = false
 
     var body: some View {
@@ -116,9 +119,16 @@ struct RegisterView: View {
                     VStack(spacing: 8) {
                         
                         Button {
-                            Task {
+                            guard password == confirmPassword else {
+                                errorMessage = "Passwords must match"
+                            return
+                            }
+                            Task { @MainActor in
+                                isLoading = true
+                                errorMessage = ""
                                 do {
                                     // 1. יוצרים משתמש ב‑FirebaseAuth
+                                    isLoading = true
                                     let result = try await Auth.auth()
                                         .createUser(withEmail: email, password: password)
                                     let user = result.user
@@ -132,9 +142,12 @@ struct RegisterView: View {
                                         ])
                                     // 3. יוזמים ניווט ל‑Home (למשל באמצעות @EnvironmentObject או State)
                                     print("registered:", user.uid)
+                                    isLoading = false
                                     didRegister = true
                                 } catch {
                                     print("registration error:", error.localizedDescription)
+                                    isLoading = false
+                                    errorMessage = error.localizedDescription
                                 }
                             }
                         } label: {
@@ -144,6 +157,13 @@ struct RegisterView: View {
                                 .background(Color.primaryPink)
                                 .foregroundColor(.white)
                                 .cornerRadius(8)
+                        }.disabled(isLoading || password.isEmpty || email.isEmpty)
+                        
+                        if !errorMessage.isEmpty {
+                            Text(errorMessage)
+                                .foregroundColor(.red)
+                                .font(.caption)
+                                .padding(.top, 4)
                         }
 
                         
@@ -157,6 +177,12 @@ struct RegisterView: View {
                     }
                 }
                     .padding(24)
+                    .frame(maxHeight: .infinity)
+                
+                if isLoading {
+                    Color.black.opacity(0.3).ignoresSafeArea()
+                    DogLoaderView()
+                }
                 
             }
         }

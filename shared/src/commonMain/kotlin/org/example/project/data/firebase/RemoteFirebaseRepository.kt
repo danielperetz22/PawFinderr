@@ -13,10 +13,12 @@ import kotlinx.datetime.Clock
 class RemoteFirebaseRepository : FirebaseRepository {
 
     override suspend fun signUp(email: String, password: String) {
+        // יוצר חשבון חדש ב‑Firebase Auth
         Firebase.auth.createUserWithEmailAndPassword(email, password)
     }
 
     override suspend fun signIn(email: String, password: String) {
+        // מתחבר חשבון קיים
         Firebase.auth.signInWithEmailAndPassword(email, password)
     }
 
@@ -24,6 +26,7 @@ class RemoteFirebaseRepository : FirebaseRepository {
         Firebase.auth.currentUser?.uid
 
     override suspend fun saveUserProfile(uid: String, email: String) {
+        // שומר מסמך משתמש ב‑Firestore תחת collection “users”
         Firebase.firestore
             .collection("users")
             .document(uid)
@@ -39,6 +42,16 @@ class RemoteFirebaseRepository : FirebaseRepository {
         Firebase.auth.signOut()
     }
 
+    override fun currentUserEmail(): String? =
+        Firebase.auth.currentUser?.email
+
+    override suspend fun updatePassword(newPassword: String) {
+        Firebase.auth.currentUser
+            ?.updatePassword(newPassword)
+            ?: throw IllegalStateException("No signed-in user")
+    }
+
+
     override suspend fun saveReport(
         description: String,
         name: String,
@@ -47,22 +60,23 @@ class RemoteFirebaseRepository : FirebaseRepository {
         isLost: Boolean,
         location: String?
     ) {
+        // ① get the current user’s UID
         val userId = Firebase.auth.currentUser
             ?.uid
             ?: throw IllegalStateException("No authenticated user!")
 
+        // ② write a document that includes userId
         Firebase.firestore
             .collection("reports")
             .add(
                 mapOf(
                     "userId" to userId,
                     "description" to description,
-                    "name" to name,
-                    "phone" to phone,
-                    "imageUrl" to imageUrl,
-                    "isLost" to isLost,
-                    "location" to location,
-                    "createdAt" to Clock.System.now().toEpochMilliseconds()
+                    "name"        to name,
+                    "phone"       to phone,
+                    "imageUrl"    to imageUrl,
+                    "isLost"      to isLost,
+                    "location"    to location
                 )
             )
     }
