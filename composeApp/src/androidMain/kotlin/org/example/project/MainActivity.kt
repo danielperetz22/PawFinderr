@@ -138,12 +138,6 @@ class MainActivity : ComponentActivity() {
                         composable("feed") {
                             val vmFeed: AndroidUserViewModel = viewModel()
                             FeedScreen(
-                                onSignOut = {
-                                    vmFeed.signOut()
-                                    navController.navigate("home") {
-                                        popUpTo("home") { inclusive = true }
-                                    }
-                                }
                             )
                         }
 

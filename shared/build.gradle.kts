@@ -37,6 +37,8 @@ kotlin {
             implementation("com.airbnb.android:lottie-compose:6.0.0")
             implementation("io.insert-koin:koin-android:4.0.4")
             implementation("io.insert-koin:koin-androidx-compose:4.0.4")
+            implementation("com.google.android.gms:play-services-location:21.3.0")
+
         }
         commonMain.dependencies {
             implementation(project.dependencies.platform(libs.firebase.bom))

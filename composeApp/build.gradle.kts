@@ -33,8 +33,11 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(project.dependencies.platform(libs.firebase.bom.v33140))
-
+            implementation("com.google.android.gms:play-services-location:21.0.1")
+            implementation("com.google.android.gms:play-services-maps:18.1.0")
+            implementation("com.google.maps.android:maps-compose:2.11.3")
         }
+
         commonMain.dependencies {
             implementation("dev.gitlive:firebase-app:2.1.0")
             implementation("dev.gitlive:firebase-auth:2.1.0")
@@ -48,6 +51,8 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(projects.shared)
+            implementation("com.google.android.gms:play-services-location:21.3.0")
+
 
         }
         commonTest.dependencies {
@@ -66,6 +71,8 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+        manifestPlaceholders["MAPS_API_KEY"] = project.findProperty("MAPS_API_KEY") as String? ?: ""
+
     }
     packaging {
         resources {
