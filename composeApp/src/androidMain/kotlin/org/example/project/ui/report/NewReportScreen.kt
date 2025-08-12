@@ -101,6 +101,9 @@ fun NewReportScreen(
     var name by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
 
+    var showPicker by remember { mutableStateOf(false) }
+    var currentPicked by remember(pickedLocation) { mutableStateOf(pickedLocation) }
+
     // --- Wrap in a Box to center the Column both vertically & horizontally ---
     Box(
         modifier = Modifier
@@ -238,8 +241,8 @@ fun NewReportScreen(
 
             // --- Name field ---
             OutlinedTextField(
-                value = name,                                       // ← CHANGED
-                onValueChange = { name = it },                      // ← CHANGED
+                value = name,
+                onValueChange = { name = it },
                 label = { Text("Name") },
                 placeholder = { Text("Add your name here") },
                 modifier = Modifier.fillMaxWidth()
@@ -254,7 +257,7 @@ fun NewReportScreen(
                 label = { Text("Phone") },
                 placeholder = { Text("+972.....") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(                // ← CHANGED
+                keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Phone
                 )
             )
@@ -263,7 +266,7 @@ fun NewReportScreen(
 
             // --- Add Location button with emoji ---
             OutlinedButton(
-                onClick = onAddLocation,
+                onClick = { showPicker = true },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(44.dp),
@@ -283,6 +286,17 @@ fun NewReportScreen(
             if (pickedLocation != null) {
                 Text("📍 Location set (${pickedLocation.first}, ${pickedLocation.second})")
             }
+            currentPicked?.let { (lat, lng) ->
+                Text("📍 Location set ($lat, $lng)")
+            }
+
+            if (showPicker) {
+                MapPickerDialog(
+                    onDismiss = { showPicker = false },
+                    onPicked  = { lat, lng -> currentPicked = lat to lng }
+                )
+            }
+            
             Spacer(Modifier.height(12.dp))
 
             // --- Publish Report ---
@@ -299,8 +313,8 @@ fun NewReportScreen(
                                 phone,
                                 isLost,
                                 imageUrl,
-                                pickedLocation?.first,
-                                pickedLocation?.second
+                                currentPicked?.first,
+                                currentPicked?.second
                             )
                         }
                     }
