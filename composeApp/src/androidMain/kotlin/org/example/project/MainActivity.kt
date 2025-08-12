@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
@@ -50,6 +51,23 @@ class MainActivity : ComponentActivity() {
                 val currentUid by vm.currentUid.collectAsState()
                 val startDestination = if (currentUid != null) "feed" else "home"
 
+                val barRoutes = setOf("feed", "profile", "reports")
+                fun shouldShowBars(route: String?): Boolean =
+                    route in barRoutes ||
+                            route?.startsWith("new-report") == true ||
+                            route?.startsWith("report-details") == true
+
+                fun titleFor(route: String?): String = when {
+                    route == "feed"                 -> "Feed"
+                    route == "profile"              -> "Profile"
+                    route == "reports"              -> "My Reports"
+                    route?.startsWith("new-report") == true -> "New Report"
+                    route?.startsWith("report-details") == true -> "Report Details"
+                    else -> route.orEmpty()
+                        .replaceFirstChar { it.uppercaseChar() }
+                        .replace('-', ' ')
+                }
+
                 val navController = rememberNavController()
 
                 Scaffold(
@@ -60,9 +78,12 @@ class MainActivity : ComponentActivity() {
                         val titleText = currentRoute
                             ?.replaceFirstChar { it.uppercaseChar() }
                             ?: ""
-                        if (currentRoute in listOf("feed", "profile", "reports")) {
+                        if (shouldShowBars(currentRoute)) {
+//                            val titleText = titleMap[currentRoute] ?: currentRoute.orEmpty()
+//                                .replaceFirstChar { it.uppercaseChar() }
+//                                .replace('-', ' ')
                             AppTopBar(
-                                title= titleText,
+                                title = titleFor(currentRoute),
                                 onBackClick = { navController.popBackStack() }
                             )
                         }
@@ -70,7 +91,7 @@ class MainActivity : ComponentActivity() {
                     bottomBar = {
                         val backStackEntry by navController.currentBackStackEntryAsState()
                         val route = backStackEntry?.destination?.route
-                        if (route in listOf("feed", "profile", "reports")) {
+                        if (shouldShowBars(route)) {
                             BottomBar(navController)
                         }
                     }
@@ -78,7 +99,7 @@ class MainActivity : ComponentActivity() {
                     NavHost(
                         navController = navController,
                         startDestination = startDestination,
-                        Modifier.consumeWindowInsets(innerPadding)
+                        modifier = Modifier.padding(innerPadding)
                     ) {
                         // 1) home
                         composable("home") {
@@ -138,6 +159,7 @@ class MainActivity : ComponentActivity() {
                         composable("feed") {
                             val vmFeed: AndroidUserViewModel = viewModel()
                             FeedScreen(
+                                onPublishClicked = { navController.navigate("new-report") },
                             )
                         }
 

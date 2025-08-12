@@ -122,7 +122,7 @@ fun ProfileScreen(onSignOut: () -> Unit = {},
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .fillMaxWidth()
-                .padding(bottom = 110.dp, start = 16.dp, end = 16.dp),
+                .padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             if(!isEditing) {
