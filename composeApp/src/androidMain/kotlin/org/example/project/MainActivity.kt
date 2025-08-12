@@ -33,6 +33,7 @@ import org.example.project.data.report.ReportViewModel
 import androidx.compose.runtime.remember
 import org.example.project.data.report.ReportModel
 import org.example.project.data.report.ReportUiState
+import org.example.project.ui.report.EditReportScreen
 import org.example.project.ui.report.MyReportsScreen
 import org.example.project.ui.report.ReportDetailsScreen
 import java.net.URLDecoder
@@ -62,7 +63,7 @@ class MainActivity : ComponentActivity() {
                             ?: ""
                         if (currentRoute in listOf("feed", "profile", "reports")) {
                             AppTopBar(
-                                title= titleText,
+                                title = titleText,
                                 onBackClick = { navController.popBackStack() }
                             )
                         }
@@ -84,22 +85,22 @@ class MainActivity : ComponentActivity() {
                         composable("home") {
                             HomeScreen(
                                 onGetStarted = { navController.navigate("register") },
-                                onLogIn      = { navController.navigate("login") }
+                                onLogIn = { navController.navigate("login") }
                             )
                         }
 
                         // 2) login
                         composable("login") {
                             val vmLogin: AndroidUserViewModel = viewModel()
-                            val isLoading    by vmLogin.isLoading.collectAsState()
+                            val isLoading by vmLogin.isLoading.collectAsState()
                             val errorMessage by vmLogin.errorMessage.collectAsState()
-                            val uid          by vmLogin.currentUid.collectAsState()
+                            val uid by vmLogin.currentUid.collectAsState()
 
                             LoginScreen(
-                                isLoading           = isLoading,
-                                errorMessage        = errorMessage,
-                                onLogin             = { email, pwd -> vmLogin.signIn(email, pwd) },
-                                onNavigateToRegister= { navController.navigate("register") }
+                                isLoading = isLoading,
+                                errorMessage = errorMessage,
+                                onLogin = { email, pwd -> vmLogin.signIn(email, pwd) },
+                                onNavigateToRegister = { navController.navigate("register") }
                             )
 
                             LaunchedEffect(uid) {
@@ -114,15 +115,15 @@ class MainActivity : ComponentActivity() {
                         // 3) register
                         composable("register") {
                             val vmReg: AndroidUserViewModel = viewModel()
-                            val isLoading    by vmReg.isLoading.collectAsState()
+                            val isLoading by vmReg.isLoading.collectAsState()
                             val errorMessage by vmReg.errorMessage.collectAsState()
-                            val uid          by vmReg.currentUid.collectAsState()
+                            val uid by vmReg.currentUid.collectAsState()
 
                             RegisterScreen(
-                                isLoading           = isLoading,
-                                errorMessage        = errorMessage,
-                                onRegister          = { email, pwd -> vmReg.signUp(email, pwd) },
-                                onNavigateToLogin   = { navController.navigate("login") }
+                                isLoading = isLoading,
+                                errorMessage = errorMessage,
+                                onRegister = { email, pwd -> vmReg.signUp(email, pwd) },
+                                onNavigateToLogin = { navController.navigate("login") }
                             )
 
                             LaunchedEffect(uid) {
@@ -154,8 +155,8 @@ class MainActivity : ComponentActivity() {
                             val errorMessage by vmProfile.errorMessage.collectAsState()
                             val uid by vmProfile.currentUid.collectAsState()
                             ProfileScreen(
-                                isLoading           = isLoading,
-                                errorMessage        = errorMessage,
+                                isLoading = isLoading,
+                                errorMessage = errorMessage,
                                 onSignOut = {
                                     vmProfile.signOut()
                                 }
@@ -169,32 +170,28 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
-
-                        // 6) reports
+// 6) new report
                         composable("new-report") {
                             val reportVm = remember { ReportViewModel() }
                             val uiState by reportVm.uiState.collectAsState()
 
-                            // Your screen
                             NewReportScreen(
                                 onImagePicked = { /* ... */ },
                                 onAddLocation = { /* ... */ }
                             ) { description, name, phone, isLost, imageUrl ->
                                 reportVm.saveReport(
                                     description = description,
-                                    name        = name,
-                                    phone       = phone,
-                                    imageUrl    = imageUrl,
-                                    isLost      = isLost,
-                                    location    = null
+                                    name = name,
+                                    phone = phone,
+                                    imageUrl = imageUrl,
+                                    isLost = isLost,
+                                    location = null
                                 )
                             }
 
-                            // When save succeeds, go back to "reports"
                             LaunchedEffect(uiState) {
                                 if (uiState is ReportUiState.SaveSuccess) {
                                     navController.navigate("reports") {
-                                        // recreate the screen so it reloads the list
                                         popUpTo("reports") { inclusive = true }
                                     }
                                 }
@@ -207,15 +204,13 @@ class MainActivity : ComponentActivity() {
                             val currentUid by userVm.currentUid.collectAsState()
 
                             LaunchedEffect(currentUid) {
-                                println("▶️ Compose sees currentUid = $currentUid")
-
                                 currentUid?.let { reportVm.loadReportsForUser(it) }
                             }
 
                             val uiState by reportVm.uiState.collectAsState()
                             val reports = when (uiState) {
                                 is ReportUiState.ReportsLoaded -> (uiState as ReportUiState.ReportsLoaded).reports
-                                else                           -> emptyList()
+                                else -> emptyList()
                             }
 
                             MyReportsScreen(
@@ -223,20 +218,75 @@ class MainActivity : ComponentActivity() {
                                 onPublishClicked = { navController.navigate("new-report") },
                                 onItemClick = { rpt ->
                                     val json = kotlinx.serialization.json.Json.encodeToString(rpt)
-                                    val encoded = java.net.URLEncoder.encode(json, Charsets.UTF_8.name())
+                                    val encoded =
+                                        java.net.URLEncoder.encode(json, Charsets.UTF_8.name())
                                     navController.navigate("report-details/$encoded")
                                 }
                             )
                         }
+
                         composable("report-details/{reportJson}") { backStackEntry ->
                             val raw = backStackEntry.arguments?.getString("reportJson").orEmpty()
                             val decoded = URLDecoder.decode(raw, Charsets.UTF_8.name())
                             val report = Json.decodeFromString<ReportModel>(decoded)
 
+                            // local VM to handle delete result
+                            val reportVm = remember { ReportViewModel() }
+                            val uiState by reportVm.uiState.collectAsState()
+
                             ReportDetailsScreen(
                                 report = report,
-                                onBack = { navController.popBackStack() }
+                                onBack = { navController.popBackStack() },
+                                onEdit = {
+                                    val json = Json.encodeToString(report)
+                                    val encoded =
+                                        java.net.URLEncoder.encode(json, Charsets.UTF_8.name())
+                                    navController.navigate("edit-report/$encoded")
+                                },
+                                onDelete = {
+                                    // call shared delete
+                                    reportVm.deleteReport(report.id)
+                                }
                             )
+
+                            // after delete, go back to reports
+                            LaunchedEffect(uiState) {
+                                if (uiState is ReportUiState.DeleteSuccess) {
+                                    navController.navigate("reports") {
+                                        popUpTo("reports") { inclusive = true }
+                                    }
+                                }
+                            }
+                        }
+
+                        composable("edit-report/{reportJson}") { backStackEntry ->
+                            val raw = backStackEntry.arguments?.getString("reportJson").orEmpty()
+                            val decoded = java.net.URLDecoder.decode(raw, Charsets.UTF_8.name())
+                            val report = Json.decodeFromString<ReportModel>(decoded)
+
+                            val reportVm = remember { ReportViewModel() }
+                            val uiState by reportVm.uiState.collectAsState()
+
+                            EditReportScreen(
+                                report = report,
+                                onSave = { description, name, phone, isLost ->
+                                    reportVm.updateReport(
+                                        reportId = report.id,
+                                        description = description,
+                                        name = name,
+                                        phone = phone,
+                                        isLost = isLost
+                                    )
+                                }
+                            )
+
+                            LaunchedEffect(uiState) {
+                                if (uiState is ReportUiState.UpdateSuccess) {
+                                    navController.navigate("reports") {
+                                        popUpTo("reports") { inclusive = true }
+                                    }
+                                }
+                            }
                         }
                     }
 

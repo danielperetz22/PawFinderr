@@ -49,4 +49,36 @@ class ReportViewModel(
             }
         }
     }
+
+    fun updateReport(
+        reportId: String,
+        description: String? = null,
+        name: String? = null,
+        phone: String? = null,
+        imageUrl: String? = null,
+        isLost: Boolean? = null,
+        location: String? = null
+    ) {
+        scope.launch {
+            _uiState.value = ReportUiState.Saving
+            try {
+                repo.updateReport(reportId, description, name, phone, imageUrl, isLost, location)
+                _uiState.value = ReportUiState.UpdateSuccess
+            } catch (e: Throwable) {
+                _uiState.value = ReportUiState.UpdateError(e)
+            }
+        }
+    }
+
+    fun deleteReport(reportId: String) {
+        scope.launch {
+            _uiState.value = ReportUiState.Saving
+            try {
+                repo.deleteReport(reportId)
+                _uiState.value = ReportUiState.DeleteSuccess
+            } catch (e: Throwable) {
+                _uiState.value = ReportUiState.DeleteError(e)
+            }
+        }
+    }
 }
