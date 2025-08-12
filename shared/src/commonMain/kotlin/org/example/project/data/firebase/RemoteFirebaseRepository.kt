@@ -58,7 +58,9 @@ class RemoteFirebaseRepository : FirebaseRepository {
         phone: String,
         imageUrl: String,
         isLost: Boolean,
-        location: String?
+        location: String?,
+        lat: Double?,
+        lng: Double?
     ) {
         // ① get the current user’s UID
         val userId = Firebase.auth.currentUser
@@ -76,7 +78,9 @@ class RemoteFirebaseRepository : FirebaseRepository {
                     "phone"       to phone,
                     "imageUrl"    to imageUrl,
                     "isLost"      to isLost,
-                    "location"    to location
+                    "location"    to location,
+                    "lat"         to lat,
+                    "lng"         to lng,
                 )
             )
     }

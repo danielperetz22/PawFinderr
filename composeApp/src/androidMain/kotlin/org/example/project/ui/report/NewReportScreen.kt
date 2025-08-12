@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.rememberAsyncImagePainter
 import org.example.project.CloudinaryUploader
+import org.example.project.data.report.ReportViewModel
 
 private val balooBhaijaan2Family = FontFamily(
     Font(R.font.baloobhaijaan2_regular,   FontWeight.Normal),
@@ -41,6 +42,7 @@ private val balooBhaijaan2Family = FontFamily(
 )
 @Composable
 fun NewReportScreen(
+    pickedLocation: Pair<Double, Double>?,
     onImagePicked: (Uri) -> Unit = {},
     onAddLocation: () -> Unit = {},
     onPublish: (
@@ -48,7 +50,9 @@ fun NewReportScreen(
         name: String,
         phone: String,
         isLost: Boolean,
-        imageUrl: String
+        imageUrl: String,
+        lat: Double?,
+        lng: Double?
     ) -> Unit
 ) {
     val context = LocalContext.current
@@ -57,6 +61,9 @@ fun NewReportScreen(
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var uploading by remember { mutableStateOf(false) }
     var uploadedUrl by remember { mutableStateOf<String?>(null) }
+    val reportVm = remember { ReportViewModel() }
+    val uiState by reportVm.uiState.collectAsState()
+
 
     val galleryLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
@@ -273,6 +280,9 @@ fun NewReportScreen(
                     fontSize = 16.sp,
                 )
             }
+            if (pickedLocation != null) {
+                Text("📍 Location set (${pickedLocation.first}, ${pickedLocation.second})")
+            }
             Spacer(Modifier.height(12.dp))
 
             // --- Publish Report ---
@@ -288,7 +298,9 @@ fun NewReportScreen(
                                 name,
                                 phone,
                                 isLost,
-                                imageUrl
+                                imageUrl,
+                                pickedLocation?.first,
+                                pickedLocation?.second
                             )
                         }
                     }

@@ -10,7 +10,7 @@ interface FirebaseRepository {
     suspend fun signOut()
     fun currentUserEmail(): String?
     suspend fun updatePassword(newPassword: String)
-    suspend fun saveReport(description: String, name: String, phone: String, imageUrl: String, isLost: Boolean, location: String? = null)
+    suspend fun saveReport(description: String, name: String, phone: String, imageUrl: String, isLost: Boolean, location: String? = null, lat: Double? = null, lng:Double? = null )
     suspend fun getReportsForUser(userId: String): List<ReportModel>
 }
 

@@ -12,6 +12,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -34,6 +35,7 @@ import org.example.project.data.report.ReportViewModel
 import androidx.compose.runtime.remember
 import org.example.project.data.report.ReportModel
 import org.example.project.data.report.ReportUiState
+import org.example.project.ui.report.MapPickerScreen
 import org.example.project.ui.report.MyReportsScreen
 import org.example.project.ui.report.ReportDetailsScreen
 import java.net.URLDecoder
@@ -191,18 +193,27 @@ class MainActivity : ComponentActivity() {
                             val reportVm = remember { ReportViewModel() }
                             val uiState by reportVm.uiState.collectAsState()
 
+                            val pickedLocationFlow = navController.currentBackStackEntry
+                                ?.savedStateHandle
+                                ?.getStateFlow("picked_location", null as Pair<Double, Double>?)
+                            val pickedLocation by (pickedLocationFlow?.collectAsState() ?: remember { mutableStateOf(null) })
+
+
                             // Your screen
                             NewReportScreen(
+                                pickedLocation = pickedLocation,
                                 onImagePicked = { /* ... */ },
-                                onAddLocation = { /* ... */ }
-                            ) { description, name, phone, isLost, imageUrl ->
+                                onAddLocation = { navController.navigate("pick-location") }
+                            ) { description, name, phone, isLost, imageUrl, lat, lng ->
                                 reportVm.saveReport(
                                     description = description,
                                     name        = name,
                                     phone       = phone,
                                     imageUrl    = imageUrl,
                                     isLost      = isLost,
-                                    location    = null
+                                    location    = null,
+                                    lat = lat,
+                                    lng=lng
                                 )
                             }
 
@@ -252,6 +263,17 @@ class MainActivity : ComponentActivity() {
                             ReportDetailsScreen(
                                 report = report,
                                 onBack = { navController.popBackStack() }
+                            )
+                        }
+                        composable("pick-location") {
+                            MapPickerScreen(
+                                onCancel = { navController.popBackStack() },
+                                onPick = { lat, lng ->
+                                    navController.previousBackStackEntry
+                                        ?.savedStateHandle
+                                        ?.set("picked_location", Pair(lat, lng))
+                                    navController.popBackStack()
+                                }
                             )
                         }
                     }

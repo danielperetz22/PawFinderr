@@ -25,12 +25,14 @@ class ReportViewModel(
         phone: String,
         imageUrl: String,
         isLost: Boolean,
-        location: String? = null
+        location: String? = null,
+        lat: Double? = null,
+        lng: Double? = null
     ) {
         scope.launch {
             _uiState.value = ReportUiState.Saving
             try {
-                repo.saveReport(description, name, phone, imageUrl, isLost, location)
+                repo.saveReport(description, name, phone, imageUrl, isLost, location, lat, lng)
                 _uiState.value = ReportUiState.SaveSuccess
             } catch (e: Throwable) {
                 _uiState.value = ReportUiState.SaveError(e)
