@@ -3,7 +3,11 @@ import Shared
 
 struct ReportDetailsView: View {
     let report: ReportModel
-    var onEdit: () -> Void = {}
+    var onEdit: () -> Void = {}          // optional callback if you still want it
+    var onDelete: () -> Void = {}
+
+    @State private var showEdit = false
+    @State private var showDeleteConfirm = false
 
     var body: some View {
         ZStack {
@@ -42,14 +46,15 @@ struct ReportDetailsView: View {
                             .font(.body)
                     }
 
-                    // Location
+                    // Location (optional)
                     if let loc = report.location, !loc.isEmpty {
                         HStack(alignment: .firstTextBaseline, spacing: 6) {
                             Text("📍")
                             Text(loc).font(.body)
                         }
                     }
-                    // Map placeholder block (optional)
+
+                    // Map placeholder
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color.white)
                         .frame(height: 140)
@@ -58,17 +63,21 @@ struct ReportDetailsView: View {
                                 .foregroundColor(.secondary)
                         )
 
-                    // Spacer so button does not overlap content
-                    Spacer().frame(height: 88)
+                    Spacer().frame(height: 104) // leave room for the two buttons
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 16)
             }
 
-            // Bottom Edit button
-            VStack {
+            // Bottom action buttons
+            VStack(spacing: 10) {
                 Spacer()
-                Button(action: onEdit) {
+
+                // Edit
+                Button {
+                    showEdit = true
+                    onEdit() // keep your external callback if you need analytics etc.
+                } label: {
                     Text("Edit")
                         .font(.custom("BalooBhaijaan2-Bold", size: 16))
                         .foregroundColor(.white)
@@ -76,12 +85,42 @@ struct ReportDetailsView: View {
                         .background(Color("PrimaryPink"))
                         .cornerRadius(8)
                 }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 16)
+
+                // Delete
+                Button(role: .destructive) {
+                    showDeleteConfirm = true
+                } label: {
+                    Text("Delete")
+                        .font(.custom("BalooBhaijaan2-Bold", size: 16))
+                        .frame(maxWidth: .infinity, minHeight: 48)
+                        .foregroundColor(.red)
+                        .background(Color.clear)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.red, lineWidth: 1)
+                        )
+                }
             }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 16)
         }
         .navigationTitle("report details")
         .navigationBarTitleDisplayMode(.inline)
+        .alert("Delete report?", isPresented: $showDeleteConfirm) {
+            Button("Delete", role: .destructive) { onDelete() }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("This action cannot be undone.")
+        }
+        // NAVIGATION goes on the root view, not on the Button
+        .navigationDestination(isPresented: $showEdit) {
+            EditReportView(report: report) { description, name, phone, isLost in
+                // Handle save inside EditReportView via your shared VM.
+                // If you want to pop back after saving:
+                // (EditReportView can dismiss itself or call a closure.)
+                showEdit = false
+            }
+        }
     }
 }
 
@@ -98,26 +137,6 @@ private struct LabeledLine: View {
                 Text(text)
                     .font(.body)
             }
-        }
-    }
-}
-
-struct ReportDetailsView_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationView {
-            ReportDetailsView(
-                report: ReportModel(
-                    id: "1",
-                    userId: "u",
-                    description: "Very friendly dog near the park. Brown, small, wearing a blue collar.",
-                    name: "Hila",
-                    phone: "+972 50 000 0000",
-                    imageUrl: "https://picsum.photos/600/400",
-                    isLost: true,
-                    location: "Tel Aviv",
-                    createdAt: 0
-                )
-            )
         }
     }
 }
