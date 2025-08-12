@@ -14,4 +14,5 @@ interface ReportRepository {
     )
 
     suspend fun getReportsForUser(userId: String): List<ReportModel>
+    suspend fun getAllReports(): List<ReportModel>
 }

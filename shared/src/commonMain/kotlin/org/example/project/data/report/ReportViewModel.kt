@@ -51,4 +51,16 @@ class ReportViewModel(
             }
         }
     }
+
+    fun loadAllReports() {
+        scope.launch {
+            _uiState.value = ReportUiState.LoadingReports
+            try {
+                val list = repo.getAllReports()
+                _uiState.value = ReportUiState.ReportsLoaded(list)
+            } catch (e: Throwable) {
+                _uiState.value = ReportUiState.LoadError(e)
+            }
+        }
+    }
 }

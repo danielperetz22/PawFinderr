@@ -117,6 +117,35 @@ class RemoteFirebaseRepository : FirebaseRepository {
         // newest first on client
         return results.sortedByDescending { it.createdAt }
     }
+    override suspend fun getAllReports(): List<ReportModel> {
+        val snapshot = Firebase.firestore
+            .collection("reports")
+            .get()
+
+        val results = mutableListOf<ReportModel>()
+        for (doc in snapshot.documents) {
+            try {
+                val m = doc.data(ReportModel.serializer()).copy(id = doc.id)
+                results += m
+            } catch (_: Exception) {
+                val raw = try { doc.data() as? Map<String, Any?> ?: emptyMap() } catch (_: Throwable) { emptyMap() }
+                results += ReportModel(
+                    id          = doc.id,
+                    userId      = raw["userId"]?.toString().orEmpty(),
+                    description = raw["description"]?.toString().orEmpty(),
+                    name        = raw["name"]?.toString().orEmpty(),
+                    phone       = raw["phone"]?.toString().orEmpty(),
+                    imageUrl    = raw["imageUrl"]?.toString().orEmpty(),
+                    isLost      = (raw["isLost"] as? Boolean) ?: false,
+                    location    = raw["location"]?.toString(),
+                    createdAt   = (raw["createdAt"] as? Number)?.toLong() ?: 0L,
+                    lat         = (raw["lat"] as? Number)?.toDouble(),
+                    lng         = (raw["lng"] as? Number)?.toDouble()
+                )
+            }
+        }
+        return results.sortedByDescending { it.createdAt }
+    }
 
 
 }

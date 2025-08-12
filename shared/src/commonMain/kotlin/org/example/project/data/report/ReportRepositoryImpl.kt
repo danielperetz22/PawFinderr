@@ -23,4 +23,7 @@ class ReportRepositoryImpl(
 
     override suspend fun getReportsForUser(userId: String): List<ReportModel> =
         firebase.getReportsForUser(userId)
+
+    override suspend fun getAllReports(): List<ReportModel> =
+        firebase.getAllReports()
 }

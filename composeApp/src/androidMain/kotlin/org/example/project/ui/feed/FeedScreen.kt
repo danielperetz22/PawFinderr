@@ -33,10 +33,13 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.example.project.data.report.ReportModel
 import org.example.project.location.getLocation
 
 @Composable
-fun MapView() {
+fun MapView( reports: List<ReportModel>,
+             onReportClicked: (ReportModel) -> Unit
+) {
     val context = LocalContext.current
 
     // Permission state + launcher
@@ -94,16 +97,43 @@ fun MapView() {
             zoomControlsEnabled = true,
         )
     )
+    {
+        // 🔴 Pins for ALL reports that have coordinates
+        reports.forEach { rpt ->
+            val lat = rpt.lat
+            val lng = rpt.lng
+            if (lat != null && lng != null) {
+                val pos = LatLng(lat, lng)
+                Marker(
+                    state = MarkerState(position = pos),
+                    title = if (rpt.name.isNotBlank()) rpt.name
+                    else if (rpt.isLost) "Lost" else "Found",
+                    snippet = rpt.description.take(60),
+                    onClick = {
+                        onReportClicked(rpt)   // navigate to details
+                        true                   // consume click
+                    }
+                )
+            }
+        }
+    }
 }
 
 
 @Composable
-fun FeedScreen(onPublishClicked: () -> Unit = {}) {
+fun FeedScreen(
+    reports: List<ReportModel>,
+    onReportClicked: (ReportModel) -> Unit,
+    onPublishClicked: () -> Unit = {}
+) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        MapView()
+        MapView(
+            reports = reports,
+            onReportClicked = onReportClicked
+        )
         SmallFloatingActionButton(
             onClick = onPublishClicked,
             modifier = Modifier
@@ -117,10 +147,3 @@ fun FeedScreen(onPublishClicked: () -> Unit = {}) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun FeedScreenPreview() {
-    MaterialTheme {
-        FeedScreen()
-    }
-}

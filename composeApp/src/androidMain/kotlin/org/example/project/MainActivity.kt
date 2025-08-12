@@ -159,8 +159,21 @@ class MainActivity : ComponentActivity() {
 
                         // 4) feed
                         composable("feed") {
+                            val reportVm = remember { ReportViewModel() }
+                            val uiState by reportVm.uiState.collectAsState()
+                            LaunchedEffect(Unit) { reportVm.loadAllReports() }
+                            val reports = when (uiState) {
+                                is ReportUiState.ReportsLoaded -> (uiState as ReportUiState.ReportsLoaded).reports
+                                else -> emptyList()
+                            }
                             val vmFeed: AndroidUserViewModel = viewModel()
                             FeedScreen(
+                                reports = reports,
+                                onReportClicked = { rpt ->
+                                    val json = kotlinx.serialization.json.Json.encodeToString(rpt)
+                                    val encoded = java.net.URLEncoder.encode(json, Charsets.UTF_8.name())
+                                    navController.navigate("report-details/$encoded")
+                                },
                                 onPublishClicked = { navController.navigate("new-report") },
                             )
                         }
