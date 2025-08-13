@@ -1,72 +1,94 @@
 import SwiftUI
-import FirebaseAuth
-import FirebaseFirestore
+import MapKit
+import Shared
 
 struct FeedView: View {
-    // Allows this view to pop itself off the NavigationStack
-    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var session: SessionStore
 
-    // Callback to perform additional cleanup after sign-out (e.g. clear your session state)
-    var onSignOut: () -> Void
+    // TLV fallback
+    private let tlv = CLLocationCoordinate2D(latitude: 32.0853, longitude: 34.7818)
+
+    @State private var cameraPosition: MapCameraPosition = .region(
+        MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 32.0853, longitude: 34.7818),
+                           span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05))
+    )
+    @State private var userCoordinate: CLLocationCoordinate2D?
+    @State private var isLocating = false
+    @State private var locationError: String?
 
     var body: some View {
         ZStack {
-            Color("BackgroundGray")
-                .ignoresSafeArea()
-            
-            VStack {
-                Spacer()
-                
-                Text("Feed")
-                    .font(.system(size: 32, weight: .bold))
-                    .padding(.bottom, 24)
-                
-                Button(action: signOut) {
-                    Text("Sign Out")
-                        .frame(maxWidth: .infinity, minHeight: 44)
-                        .background(Color.accentColor)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
+            Color("BackgroundGray").ignoresSafeArea()
+
+            VStack(spacing: 16) {
+
+                // ✅ Blue dot via UserAnnotation()
+                Map(position: $cameraPosition) {
+                    UserAnnotation() // the native blue dot (shows when permission is granted)
+
+                    // Optional extra pin while you still center manually:
+                    if let coord = userCoordinate {
+                        Marker("You are here", coordinate: coord)
+                    } else {
+                        Marker("Tel Aviv", coordinate: tlv)
+                    }
                 }
-                .padding(.horizontal)
-                
-                Spacer()
+                .frame(maxWidth: .infinity)
+                .frame(maxHeight: .infinity)
+                .padding(.top, 32)
+                .padding(.bottom, 80)
+                .overlay(alignment: .topTrailing) {
+                    // Your locate button (you can swap this for MapUserLocationButton() if you prefer)
+                    Button(action: locateMe) {
+                        Image(systemName: "location.fill")
+                            .foregroundColor(.white)
+                            .padding(10)
+                            .background(Color.accentColor)
+                            .clipShape(Circle())
+                            .shadow(radius: 2)
+                    }
+                    .padding(12)
+                }
+
+                if isLocating { ProgressView("Getting your location…") }
+                if let err = locationError {
+                    Text(err).font(.footnote).foregroundColor(.red).padding(.horizontal)
+                }
             }
-            .padding(16)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 16)
         }
-        .onAppear {session.currentTitle = "Feed"}
+        .onAppear {
+            session.currentTitle = "Feed"
+            if userCoordinate == nil { locateMe() }
+        }
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    private func signOut() {
-        do {
-            try Auth.auth().signOut()
+    private func locateMe() {
+        guard !isLocating else { return }
+        isLocating = true
+        locationError = nil
 
-            // Verify currentUser is nil
-            if Auth.auth().currentUser == nil {
-                print("✅ Successfully signed out from Firebase")
-                
-                // First call your cleanup callback
-                onSignOut()
-                
-                // Then dismiss this view (pop back to Home)
-                dismiss()
-            } else {
-                print("⚠️ Still signed in to Firebase!")
+        // Call the KMM suspend fun through the generated Swift bridge
+        Shared.LocationApi().get { location, error in
+            DispatchQueue.main.async {
+                defer { self.isLocating = false }
+                if let error = error {
+                    self.locationError = error.localizedDescription
+                    return
+                }
+                guard let loc = location else {
+                    self.locationError = "Unknown location error"
+                    return
+                }
+                let coord = CLLocationCoordinate2D(latitude: loc.latitude, longitude: loc.longitude)
+                self.userCoordinate = coord
+                self.cameraPosition = .region(
+                    MKCoordinateRegion(center: coord,
+                                       span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02))
+                )
             }
-        } catch let error as NSError {
-            print("❌ Error signing out: \(error.localizedDescription)")
-        }
-    }
-}
-
-struct FeedView_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationStack {
-            FeedView(onSignOut: {
-                // no-op
-            })
         }
     }
 }

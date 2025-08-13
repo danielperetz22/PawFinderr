@@ -17,9 +17,7 @@ struct LoginView: View {
     var body: some View {
         NavigationStack {
             NavigationLink(
-                            destination: FeedView(onSignOut: {
-                                // handle sign-out if needed
-                            }),
+                            destination: FeedView(),
                             isActive: $isLoggedIn
                         ) {
                             EmptyView()
