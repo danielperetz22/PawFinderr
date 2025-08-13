@@ -12,4 +12,16 @@ interface ReportRepository {
     )
 
     suspend fun getReportsForUser(userId: String): List<ReportModel>
+
+    suspend fun updateReport(
+        reportId: String,
+        description: String? = null,
+        name: String? = null,
+        phone: String? = null,
+        imageUrl: String? = null,
+        isLost: Boolean? = null,
+        location: String? = null
+    )
+
+    suspend fun deleteReport(reportId: String)
 }

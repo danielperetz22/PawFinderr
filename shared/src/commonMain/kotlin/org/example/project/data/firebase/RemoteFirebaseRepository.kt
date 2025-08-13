@@ -113,6 +113,37 @@ class RemoteFirebaseRepository : FirebaseRepository {
         // newest first on client
         return results.sortedByDescending { it.createdAt }
     }
+    override suspend fun updateReport(
+        reportId: String,
+        description: String?,
+        name: String?,
+        phone: String?,
+        imageUrl: String?,
+        isLost: Boolean?,
+        location: String?
+    ) {
+        // build a partial update map (only fields you pass != null will be updated)
+        val data = mutableMapOf<String, Any>()
+        description?.let { data["description"] = it }
+        name?.let        { data["name"]        = it }
+        phone?.let       { data["phone"]       = it }
+        imageUrl?.let    { data["imageUrl"]    = it }
+        isLost?.let      { data["isLost"]      = it }
+        location?.let    { data["location"]    = it }
 
+        if (data.isEmpty()) return // nothing to update
+
+        Firebase.firestore
+            .collection("reports")
+            .document(reportId)
+            .update(data)
+    }
+
+    override suspend fun deleteReport(reportId: String) {
+        Firebase.firestore
+            .collection("reports")
+            .document(reportId)
+            .delete()
+    }
 
 }

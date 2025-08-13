@@ -11,46 +11,57 @@ struct MyReportsView: View {
     private let auth = RemoteFirebaseRepository()
 
     var body: some View {
-        ZStack {
-            Color("BackgroundGray").ignoresSafeArea() // ← app background color
+        NavigationStack { // ① add navigation container
+            ZStack {
+                Color("BackgroundGray").ignoresSafeArea()
 
-            if isLoading {
-                ProgressView().scaleEffect(1.2)
-            } else if let err = errorText {
-                Text(err).foregroundColor(.red)
-            } else if reports.isEmpty {
-                Text("No reports yet")
-                    .font(.title2)
-                    .foregroundColor(.gray)
-            } else {
-                List(reports, id: \.id) { rpt in
-                    ReportRow(report: rpt)
+                if isLoading {
+                    ProgressView().scaleEffect(1.2)
+                } else if let err = errorText {
+                    Text(err).foregroundColor(.red)
+                } else if reports.isEmpty {
+                    Text("No reports yet")
+                        .font(.title2)
+                        .foregroundColor(.gray)
+                } else {
+                    List(reports, id: \.id) { rpt in
+                        // ② wrap row in a NavigationLink to details
+                        NavigationLink {
+                            ReportDetailsView(report: rpt)
+                                .navigationTitle("report details")
+                                .navigationBarTitleDisplayMode(.inline)
+                        } label: {
+                            ReportRow(report: rpt)
+                        }
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
-                }
-                .listStyle(.plain)
-            }
-
-            // Floating + button
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    Button {
-                        showNewReport = true
-                    } label: {
-                        Image(systemName: "plus")
-                            .font(.system(size: 22, weight: .bold))
-                            .foregroundColor(.white)
-                            .padding(18)
-                            .background(Color("SecondaryPink")) // ← match app color
-                            .clipShape(Circle())
-                            .shadow(radius: 4)
                     }
-                    .padding(.trailing, 16)
-                    .padding(.bottom, 24)
+                    .listStyle(.plain)
+                }
+
+                // Floating + button
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Button {
+                            showNewReport = true
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.system(size: 22, weight: .bold))
+                                .foregroundColor(.white)
+                                .padding(18)
+                                .background(Color("SecondaryPink"))
+                                .clipShape(Circle())
+                                .shadow(radius: 4)
+                        }
+                        .padding(.trailing, 16)
+                        .padding(.bottom, 24)
+                    }
                 }
             }
+            .navigationTitle("My Reports")
+            .navigationBarTitleDisplayMode(.inline)
         }
         .onAppear { loadReports() }
         .sheet(isPresented: $showNewReport) {
@@ -73,7 +84,6 @@ struct MyReportsView: View {
                 return
             }
             self.reports = list ?? []
-
         }
     }
 }
@@ -82,12 +92,12 @@ struct ReportRow: View {
     let report: ReportModel
 
     var body: some View {
-        HStack(spacing: 14) { // a bit more spacing
+        HStack(spacing: 14) {
             if !report.imageUrl.isEmpty, let url = URL(string: report.imageUrl) {
                 AsyncImage(url: url) { img in img.resizable() } placeholder: {
                     Color.gray.opacity(0.2)
                 }
-                .frame(width: 88, height: 88) // bigger image
+                .frame(width: 88, height: 88)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
             }
 
@@ -100,7 +110,7 @@ struct ReportRow: View {
                     Text(desc)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
-                        .lineLimit(2) // show a bit more text
+                        .lineLimit(2)
                 }
 
                 HStack {
@@ -108,7 +118,7 @@ struct ReportRow: View {
                         .font(.caption)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
-                        .background(Color("PrimaryPink")) // match app style
+                        .background(Color("PrimaryPink"))
                         .foregroundColor(.white)
                         .clipShape(Capsule())
 
@@ -121,7 +131,7 @@ struct ReportRow: View {
             }
             Spacer()
         }
-        .padding(14) // bigger padding
+        .padding(14)
         .background(Color.white)
         .cornerRadius(14)
         .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 3)
