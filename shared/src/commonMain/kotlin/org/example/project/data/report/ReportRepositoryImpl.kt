@@ -26,7 +26,6 @@ class ReportRepositoryImpl(
 
     override suspend fun getAllReports(): List<ReportModel> =
         firebase.getAllReports()
-}
 
 
     override suspend fun updateReport(
