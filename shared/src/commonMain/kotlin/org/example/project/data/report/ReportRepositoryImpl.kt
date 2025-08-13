@@ -27,3 +27,19 @@ class ReportRepositoryImpl(
     override suspend fun getAllReports(): List<ReportModel> =
         firebase.getAllReports()
 }
+
+
+    override suspend fun updateReport(
+        reportId: String,
+        description: String?,
+        name: String?,
+        phone: String?,
+        imageUrl: String?,
+        isLost: Boolean?,
+        location: String?
+    ) = firebase.updateReport(reportId, description, name, phone, imageUrl, isLost, location)
+
+    override suspend fun deleteReport(reportId: String) =
+        firebase.deleteReport(reportId)
+
+}
