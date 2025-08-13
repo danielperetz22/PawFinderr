@@ -5,32 +5,56 @@ import Shared
 struct FeedView: View {
     @EnvironmentObject private var session: SessionStore
 
-    // TLV fallback
-    private let tlv = CLLocationCoordinate2D(latitude: 32.0853, longitude: 34.7818)
-
+    // Map state
     @State private var cameraPosition: MapCameraPosition = .region(
-        MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 32.0853, longitude: 34.7818),
-                           span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05))
+        MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 32.0853, longitude: 34.7818), // TLV fallback
+            span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+        )
     )
     @State private var userCoordinate: CLLocationCoordinate2D?
     @State private var isLocating = false
     @State private var locationError: String?
+
+    // Reports
+    @State private var reports: [ReportModel] = []
+    @State private var isLoadingReports = false
+    @State private var reportsError: String?
+
+    // Pin selection → details
+    @State private var selectedReport: ReportModel? = nil
 
     var body: some View {
         ZStack {
             Color("BackgroundGray").ignoresSafeArea()
 
             VStack(spacing: 16) {
-
-                // ✅ Blue dot via UserAnnotation()
                 Map(position: $cameraPosition) {
-                    UserAnnotation() // the native blue dot (shows when permission is granted)
+                    // Native blue dot (requires location permission)
+                    UserAnnotation()
 
-                    // Optional extra pin while you still center manually:
-                    if let coord = userCoordinate {
-                        Marker("You are here", coordinate: coord)
-                    } else {
-                        Marker("Tel Aviv", coordinate: tlv)
+                    // Red, tappable pins
+                    ForEach(reports, id: \.id) { rpt in
+                        let lat = rpt.lat
+                        let lng = rpt.lng
+                        if !lat.isNaN, !lng.isNaN {
+                            let coord = CLLocationCoordinate2D(latitude: lat, longitude: lng)
+                            Annotation("", coordinate: coord) {
+                                VStack(spacing: 2) {
+                                    Button {
+                                        selectedReport = rpt
+                                    } label: {
+                                        Image(systemName: "mappin.circle.fill")
+                                            .font(.title)
+                                            .foregroundColor(.red)
+                                            .shadow(radius: 2)
+                                    }
+                                    Text(rpt.name.isEmpty ? (rpt.isLost ? "Lost" : "Found") : rpt.name)
+                                        .font(.caption2)
+                                        .lineLimit(1)
+                                }
+                            }
+                        }
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -38,14 +62,22 @@ struct FeedView: View {
                 .padding(.top, 32)
                 .padding(.bottom, 80)
                 .overlay(alignment: .topTrailing) {
-                    // Your locate button (you can swap this for MapUserLocationButton() if you prefer)
-                    Button(action: locateMe) {
-                        Image(systemName: "location.fill")
-                            .foregroundColor(.white)
-                            .padding(10)
-                            .background(Color.accentColor)
-                            .clipShape(Circle())
-                            .shadow(radius: 2)
+                    HStack(spacing: 8) {
+                        if isLoadingReports { ProgressView().padding(8) }
+                        Button(action: reloadReports) {
+                            Image(systemName: "arrow.clockwise")
+                                .foregroundColor(.white)
+                                .padding(10)
+                                .background(Color.gray.opacity(0.85))
+                                .clipShape(Circle())
+                        }
+                        Button(action: locateMe) {
+                            Image(systemName: "location.fill")
+                                .foregroundColor(.white)
+                                .padding(10)
+                                .background(Color.accentColor)
+                                .clipShape(Circle())
+                        }
                     }
                     .padding(12)
                 }
@@ -54,23 +86,60 @@ struct FeedView: View {
                 if let err = locationError {
                     Text(err).font(.footnote).foregroundColor(.red).padding(.horizontal)
                 }
+                if let rerr = reportsError {
+                    Text(rerr).font(.footnote).foregroundColor(.red).padding(.horizontal)
+                }
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
         }
-        .onAppear {
-            session.currentTitle = "Feed"
+        .onAppear { session.currentTitle = "Feed" }
+        .task {
+            if reports.isEmpty { reloadReports() }
             if userCoordinate == nil { locateMe() }
+        }
+        // Present details without changing ReportDetailsView
+        .navigationDestination(item: $selectedReport) { rpt in
+            NavigationStack {
+                ReportDetailsView(report: rpt)
+            }
         }
         .navigationBarTitleDisplayMode(.inline)
     }
+
+
+
+    private func reloadReports() {
+        guard !isLoadingReports else { return }
+        isLoadingReports = true
+        reportsError = nil
+
+        // KMM suspend fun bridged as a completion handler
+        Shared.ReportRepositoryImpl().getAllReports { list, error in
+            DispatchQueue.main.async {
+                self.isLoadingReports = false
+                if let error = error {
+                    self.reportsError = error.localizedDescription
+                    self.reports = []
+                    return
+                }
+                if let arr = list as? [ReportModel] {
+                    self.reports = arr
+                } else if let anyArr = list as? [Any] {
+                    self.reports = anyArr.compactMap { $0 as? ReportModel }
+                } else {
+                    self.reports = []
+                }
+            }
+        }
+    }
+
 
     private func locateMe() {
         guard !isLocating else { return }
         isLocating = true
         locationError = nil
 
-        // Call the KMM suspend fun through the generated Swift bridge
         Shared.LocationApi().get { location, error in
             DispatchQueue.main.async {
                 defer { self.isLocating = false }
@@ -85,8 +154,10 @@ struct FeedView: View {
                 let coord = CLLocationCoordinate2D(latitude: loc.latitude, longitude: loc.longitude)
                 self.userCoordinate = coord
                 self.cameraPosition = .region(
-                    MKCoordinateRegion(center: coord,
-                                       span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02))
+                    MKCoordinateRegion(
+                        center: coord,
+                        span: MKCoordinateSpan(latitudeDelta: 0.02, longitudeDelta: 0.02)
+                    )
                 )
             }
         }
