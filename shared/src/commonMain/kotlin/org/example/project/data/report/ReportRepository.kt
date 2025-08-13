@@ -24,7 +24,9 @@ interface ReportRepository {
         phone: String? = null,
         imageUrl: String? = null,
         isLost: Boolean? = null,
-        location: String? = null
+        location: String? = null,
+        lat: Double? =null,
+        lng: Double?=null
     )
 
     suspend fun deleteReport(reportId: String)
