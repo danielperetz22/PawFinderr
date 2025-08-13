@@ -8,10 +8,14 @@ interface ReportRepository {
         phone: String,
         imageUrl: String,
         isLost: Boolean,
-        location: String? = null
+        location: String? = null,
+        lat: Double,
+        lng: Double
     )
 
     suspend fun getReportsForUser(userId: String): List<ReportModel>
+    suspend fun getAllReports(): List<ReportModel>
+
 
     suspend fun updateReport(
         reportId: String,

@@ -5,7 +5,6 @@ import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.*
 import dev.gitlive.firebase.firestore.*
 import org.example.project.data.report.ReportModel
-import kotlinx.datetime.Clock
 
 
 
@@ -58,7 +57,9 @@ class RemoteFirebaseRepository : FirebaseRepository {
         phone: String,
         imageUrl: String,
         isLost: Boolean,
-        location: String?
+        location: String?,
+        lat: Double,
+        lng: Double
     ) {
         // ① get the current user’s UID
         val userId = Firebase.auth.currentUser
@@ -76,7 +77,9 @@ class RemoteFirebaseRepository : FirebaseRepository {
                     "phone"       to phone,
                     "imageUrl"    to imageUrl,
                     "isLost"      to isLost,
-                    "location"    to location
+                    "location"    to location,
+                    "lat"         to lat,
+                    "lng"         to lng,
                 )
             )
     }
@@ -113,7 +116,42 @@ class RemoteFirebaseRepository : FirebaseRepository {
         // newest first on client
         return results.sortedByDescending { it.createdAt }
     }
-    override suspend fun updateReport(
+    override suspend fun getAllReports(): List<ReportModel> {
+        val snapshot = Firebase.firestore
+            .collection("reports")
+            .get()
+
+        fun anyToDouble(v: Any?): Double = when (v) {
+            is Number -> v.toDouble()
+            is String -> v.toDoubleOrNull() ?: Double.NaN
+            else      -> Double.NaN
+        }
+
+        val results = mutableListOf<ReportModel>()
+        for (doc in snapshot.documents) {
+            try {
+                val m = doc.data(ReportModel.serializer()).copy(id = doc.id)
+                results += m
+            } catch (_: Exception) {
+                val raw = try { doc.data() as? Map<String, Any?> ?: emptyMap() } catch (_: Throwable) { emptyMap() }
+                results += ReportModel(
+                    id          = doc.id,
+                    userId      = raw["userId"]?.toString().orEmpty(),
+                    description = raw["description"]?.toString().orEmpty(),
+                    name        = raw["name"]?.toString().orEmpty(),
+                    phone       = raw["phone"]?.toString().orEmpty(),
+                    imageUrl    = raw["imageUrl"]?.toString().orEmpty(),
+                    isLost      = (raw["isLost"] as? Boolean) ?: false,
+                    location    = raw["location"]?.toString(),
+                    createdAt   = (raw["createdAt"] as? Number)?.toLong() ?: 0L,
+                    lat         = anyToDouble(raw["lat"]),
+                    lng         = anyToDouble(raw["lat"])
+                )
+            }
+        }
+        return results.sortedByDescending { it.createdAt }
+    }
+  override suspend fun updateReport(
         reportId: String,
         description: String?,
         name: String?,

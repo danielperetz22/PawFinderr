@@ -5,12 +5,13 @@ import kotlinx.serialization.json.Json
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -19,7 +20,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.FirebaseApp
-import dev.gitlive.firebase.Firebase
 import org.example.project.ui.ProfileScreen
 import org.example.project.ui.bottomBar.AppTopBar
 import org.example.project.ui.bottomBar.BottomBar
@@ -51,6 +51,23 @@ class MainActivity : ComponentActivity() {
                 val currentUid by vm.currentUid.collectAsState()
                 val startDestination = if (currentUid != null) "feed" else "home"
 
+                val barRoutes = setOf("feed", "profile", "reports")
+                fun shouldShowBars(route: String?): Boolean =
+                    route in barRoutes ||
+                            route?.startsWith("new-report") == true ||
+                            route?.startsWith("report-details") == true
+
+                fun titleFor(route: String?): String = when {
+                    route == "feed"                 -> "Feed"
+                    route == "profile"              -> "Profile"
+                    route == "reports"              -> "My Reports"
+                    route?.startsWith("new-report") == true -> "New Report"
+                    route?.startsWith("report-details") == true -> "Report Details"
+                    else -> route.orEmpty()
+                        .replaceFirstChar { it.uppercaseChar() }
+                        .replace('-', ' ')
+                }
+
                 val navController = rememberNavController()
 
                 Scaffold(
@@ -61,9 +78,12 @@ class MainActivity : ComponentActivity() {
                         val titleText = currentRoute
                             ?.replaceFirstChar { it.uppercaseChar() }
                             ?: ""
-                        if (currentRoute in listOf("feed", "profile", "reports")) {
+                        if (shouldShowBars(currentRoute)) {
+//                            val titleText = titleMap[currentRoute] ?: currentRoute.orEmpty()
+//                                .replaceFirstChar { it.uppercaseChar() }
+//                                .replace('-', ' ')
                             AppTopBar(
-                                title = titleText,
+                                title = titleFor(currentRoute),
                                 onBackClick = { navController.popBackStack() }
                             )
                         }
@@ -71,7 +91,7 @@ class MainActivity : ComponentActivity() {
                     bottomBar = {
                         val backStackEntry by navController.currentBackStackEntryAsState()
                         val route = backStackEntry?.destination?.route
-                        if (route in listOf("feed", "profile", "reports")) {
+                        if (shouldShowBars(route)) {
                             BottomBar(navController)
                         }
                     }
@@ -79,7 +99,7 @@ class MainActivity : ComponentActivity() {
                     NavHost(
                         navController = navController,
                         startDestination = startDestination,
-                        Modifier.consumeWindowInsets(innerPadding)
+                        modifier = Modifier.padding(innerPadding)
                     ) {
                         // 1) home
                         composable("home") {
@@ -137,14 +157,22 @@ class MainActivity : ComponentActivity() {
 
                         // 4) feed
                         composable("feed") {
+                            val reportVm = remember { ReportViewModel() }
+                            val uiState by reportVm.uiState.collectAsState()
+                            LaunchedEffect(Unit) { reportVm.loadAllReports() }
+                            val reports = when (uiState) {
+                                is ReportUiState.ReportsLoaded -> (uiState as ReportUiState.ReportsLoaded).reports
+                                else -> emptyList()
+                            }
                             val vmFeed: AndroidUserViewModel = viewModel()
                             FeedScreen(
-                                onSignOut = {
-                                    vmFeed.signOut()
-                                    navController.navigate("home") {
-                                        popUpTo("home") { inclusive = true }
-                                    }
-                                }
+                                reports = reports,
+                                onReportClicked = { rpt ->
+                                    val json = kotlinx.serialization.json.Json.encodeToString(rpt)
+                                    val encoded = java.net.URLEncoder.encode(json, Charsets.UTF_8.name())
+                                    navController.navigate("report-details/$encoded")
+                                },
+                                onPublishClicked = { navController.navigate("new-report") },
                             )
                         }
 
@@ -175,17 +203,26 @@ class MainActivity : ComponentActivity() {
                             val reportVm = remember { ReportViewModel() }
                             val uiState by reportVm.uiState.collectAsState()
 
+                            val pickedLocationFlow = navController.currentBackStackEntry
+                                ?.savedStateHandle
+                                ?.getStateFlow("picked_location", null as Pair<Double, Double>?)
+                            val pickedLocation by (pickedLocationFlow?.collectAsState() ?: remember { mutableStateOf(null) })
+
+
+
                             NewReportScreen(
+                                pickedLocation = pickedLocation,
                                 onImagePicked = { /* ... */ },
-                                onAddLocation = { /* ... */ }
-                            ) { description, name, phone, isLost, imageUrl ->
+                            ) { description, name, phone, isLost, imageUrl, lat, lng ->
                                 reportVm.saveReport(
                                     description = description,
-                                    name = name,
-                                    phone = phone,
-                                    imageUrl = imageUrl,
-                                    isLost = isLost,
-                                    location = null
+                                    name        = name,
+                                    phone       = phone,
+                                    imageUrl    = imageUrl,
+                                    isLost      = isLost,
+                                    location    = null,
+                                    lat = lat,
+                                    lng=lng
                                 )
                             }
 
@@ -288,6 +325,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         }
+
                     }
 
                 }

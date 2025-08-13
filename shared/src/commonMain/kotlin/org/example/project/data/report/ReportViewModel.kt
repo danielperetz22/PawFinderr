@@ -25,12 +25,14 @@ class ReportViewModel(
         phone: String,
         imageUrl: String,
         isLost: Boolean,
-        location: String? = null
+        location: String? = null,
+        lat: Double,
+        lng: Double
     ) {
         scope.launch {
             _uiState.value = ReportUiState.Saving
             try {
-                repo.saveReport(description, name, phone, imageUrl, isLost, location)
+                repo.saveReport(description, name, phone, imageUrl, isLost, location, lat, lng)
                 _uiState.value = ReportUiState.SaveSuccess
             } catch (e: Throwable) {
                 _uiState.value = ReportUiState.SaveError(e)
@@ -50,6 +52,17 @@ class ReportViewModel(
         }
     }
 
+    fun loadAllReports() {
+        scope.launch {
+            _uiState.value = ReportUiState.LoadingReports
+            try {
+                val list = repo.getAllReports()
+                _uiState.value = ReportUiState.ReportsLoaded(list)
+            } catch (e: Throwable) {
+                _uiState.value = ReportUiState.LoadError(e)
+            }
+        }
+    }
     fun updateReport(
         reportId: String,
         description: String? = null,

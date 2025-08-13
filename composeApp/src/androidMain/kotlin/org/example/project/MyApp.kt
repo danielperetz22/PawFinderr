@@ -1,12 +1,19 @@
 package org.example.project
 
 import android.app.Application
+import android.content.Context
 import com.cloudinary.android.MediaManager
 
 
 class MyApp : Application() {
+    companion object {
+        lateinit var ctx: Context
+            private set
+    }
     override fun onCreate() {
         super.onCreate()
+        ctx = applicationContext
+
         val config = hashMapOf(
             "cloud_name" to "duk7ujnww",
             "api_key"    to "344296978824576",

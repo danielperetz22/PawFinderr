@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -24,9 +25,7 @@ fun MyReportsScreen(
     onPublishClicked: () -> Unit,
     onItemClick: (ReportModel) -> Unit = {}
 ) {
-    // Approx bar heights
-    val topBarHeight = 56.dp
-    val bottomBarHeight = 64.dp
+
 
     // Sort by newest first (replace "timestamp" with your actual field)
     val sortedReports = reports.sortedByDescending { it.id }
@@ -35,8 +34,6 @@ fun MyReportsScreen(
     Box(
         Modifier
             .fillMaxSize()
-            // keep content exactly between the bars
-            .padding(top = topBarHeight, bottom = bottomBarHeight)
     ) {
         if (sortedReports.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -47,7 +44,6 @@ fun MyReportsScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
                     top = 36.dp,
-                    bottom = bottomBarHeight + 56.dp
                 )
             ) {
                 items(sortedReports, key = { it.id }) { rpt ->
@@ -56,11 +52,13 @@ fun MyReportsScreen(
             }
         }
 
-        FloatingActionButton(
+        SmallFloatingActionButton(
             onClick = onPublishClicked,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = bottomBarHeight + 16.dp)
+                .padding(end = 16.dp, bottom = 16.dp),
+            containerColor = Color(0xFF90D1D8),
+            contentColor = Color.White,
         ) {
             Icon(Icons.Default.Add, contentDescription = "New report")
         }

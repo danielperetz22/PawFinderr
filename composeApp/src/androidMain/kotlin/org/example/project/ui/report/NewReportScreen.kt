@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.rememberAsyncImagePainter
 import org.example.project.CloudinaryUploader
+import org.example.project.data.report.ReportViewModel
 
 private val balooBhaijaan2Family = FontFamily(
     Font(R.font.baloobhaijaan2_regular,   FontWeight.Normal),
@@ -41,14 +42,16 @@ private val balooBhaijaan2Family = FontFamily(
 )
 @Composable
 fun NewReportScreen(
+    pickedLocation: Pair<Double, Double>?,
     onImagePicked: (Uri) -> Unit = {},
-    onAddLocation: () -> Unit = {},
     onPublish: (
         description: String,
         name: String,
         phone: String,
         isLost: Boolean,
-        imageUrl: String
+        imageUrl: String,
+        lat: Double,
+        lng: Double
     ) -> Unit
 ) {
     val context = LocalContext.current
@@ -56,7 +59,8 @@ fun NewReportScreen(
     var cameraUri by remember { mutableStateOf<Uri?>(null) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var uploading by remember { mutableStateOf(false) }
-    var uploadedUrl by remember { mutableStateOf<String?>(null) }
+
+
 
     val galleryLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
@@ -94,6 +98,8 @@ fun NewReportScreen(
     var name by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
 
+    var showPicker by remember { mutableStateOf(false) }
+    var currentPicked by remember(pickedLocation) { mutableStateOf(pickedLocation) }
     // --- Wrap in a Box to center the Column both vertically & horizontally ---
     Box(
         modifier = Modifier
@@ -231,8 +237,8 @@ fun NewReportScreen(
 
             // --- Name field ---
             OutlinedTextField(
-                value = name,                                       // ← CHANGED
-                onValueChange = { name = it },                      // ← CHANGED
+                value = name,
+                onValueChange = { name = it },
                 label = { Text("Name") },
                 placeholder = { Text("Add your name here") },
                 modifier = Modifier.fillMaxWidth()
@@ -247,7 +253,7 @@ fun NewReportScreen(
                 label = { Text("Phone") },
                 placeholder = { Text("+972.....") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(                // ← CHANGED
+                keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Phone
                 )
             )
@@ -256,7 +262,7 @@ fun NewReportScreen(
 
             // --- Add Location button with emoji ---
             OutlinedButton(
-                onClick = onAddLocation,
+                onClick = { showPicker = true },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(44.dp),
@@ -273,11 +279,32 @@ fun NewReportScreen(
                     fontSize = 16.sp,
                 )
             }
+
+
+            currentPicked?.let { (lat, lng) ->
+                Text("📍 Location set ($lat, $lng)")
+            }
+
+
+
+            if (showPicker) {
+                MapPickerDialog(
+                    onDismiss = { showPicker = false },
+                    onPicked  = { lat, lng -> currentPicked = lat to lng }
+                )
+            }
+            
             Spacer(Modifier.height(12.dp))
 
             // --- Publish Report ---
             Button(
-                onClick = { selectedImageUri?.let { uri ->
+                onClick = {
+                    val picked = currentPicked
+                    if (picked == null) {
+                        return@Button
+                    }
+                    val (lat, lng) = picked
+                    selectedImageUri?.let { uri ->
                     uploading = true
                     CloudinaryUploader.upload(context, uri) { url ->
                         uploading = false
@@ -288,7 +315,9 @@ fun NewReportScreen(
                                 name,
                                 phone,
                                 isLost,
-                                imageUrl
+                                imageUrl,
+                                lat,
+                                lng
                             )
                         }
                     }

@@ -14,12 +14,20 @@ class ReportRepositoryImpl(
         phone: String,
         imageUrl: String,
         isLost: Boolean,
-        location: String?
+        location: String?,
+        lat: Double,
+        lng: Double
     ) {
-        firebase.saveReport(description, name, phone, imageUrl, isLost, location)
+        firebase.saveReport(description, name, phone, imageUrl, isLost, location, lat, lng)
     }
 
-    override suspend fun getReportsForUser(userId: String): List<ReportModel> =  firebase.getReportsForUser(userId)
+    override suspend fun getReportsForUser(userId: String): List<ReportModel> =
+        firebase.getReportsForUser(userId)
+
+    override suspend fun getAllReports(): List<ReportModel> =
+        firebase.getAllReports()
+}
+
 
     override suspend fun updateReport(
         reportId: String,
