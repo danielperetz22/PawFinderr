@@ -9,8 +9,8 @@ interface ReportRepository {
         imageUrl: String,
         isLost: Boolean,
         location: String? = null,
-        lat: Double? = null,
-        lng: Double? = null
+        lat: Double,
+        lng: Double
     )
 
     suspend fun getReportsForUser(userId: String): List<ReportModel>

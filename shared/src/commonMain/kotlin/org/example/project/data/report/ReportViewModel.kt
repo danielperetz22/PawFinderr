@@ -26,8 +26,8 @@ class ReportViewModel(
         imageUrl: String,
         isLost: Boolean,
         location: String? = null,
-        lat: Double? = null,
-        lng: Double? = null
+        lat: Double,
+        lng: Double
     ) {
         scope.launch {
             _uiState.value = ReportUiState.Saving

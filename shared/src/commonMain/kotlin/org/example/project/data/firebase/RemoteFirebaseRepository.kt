@@ -5,7 +5,6 @@ import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.*
 import dev.gitlive.firebase.firestore.*
 import org.example.project.data.report.ReportModel
-import kotlinx.datetime.Clock
 
 
 
@@ -59,8 +58,8 @@ class RemoteFirebaseRepository : FirebaseRepository {
         imageUrl: String,
         isLost: Boolean,
         location: String?,
-        lat: Double?,
-        lng: Double?
+        lat: Double,
+        lng: Double
     ) {
         // ① get the current user’s UID
         val userId = Firebase.auth.currentUser
@@ -122,6 +121,12 @@ class RemoteFirebaseRepository : FirebaseRepository {
             .collection("reports")
             .get()
 
+        fun anyToDouble(v: Any?): Double = when (v) {
+            is Number -> v.toDouble()
+            is String -> v.toDoubleOrNull() ?: Double.NaN
+            else      -> Double.NaN
+        }
+
         val results = mutableListOf<ReportModel>()
         for (doc in snapshot.documents) {
             try {
@@ -139,8 +144,8 @@ class RemoteFirebaseRepository : FirebaseRepository {
                     isLost      = (raw["isLost"] as? Boolean) ?: false,
                     location    = raw["location"]?.toString(),
                     createdAt   = (raw["createdAt"] as? Number)?.toLong() ?: 0L,
-                    lat         = (raw["lat"] as? Number)?.toDouble(),
-                    lng         = (raw["lng"] as? Number)?.toDouble()
+                    lat         = anyToDouble(raw["lat"]),
+                    lng         = anyToDouble(raw["lat"])
                 )
             }
         }

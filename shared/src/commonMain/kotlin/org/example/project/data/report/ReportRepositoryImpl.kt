@@ -15,8 +15,8 @@ class ReportRepositoryImpl(
         imageUrl: String,
         isLost: Boolean,
         location: String?,
-        lat: Double?,
-        lng: Double?
+        lat: Double,
+        lng: Double
     ) {
         firebase.saveReport(description, name, phone, imageUrl, isLost, location, lat, lng)
     }

@@ -44,15 +44,14 @@ private val balooBhaijaan2Family = FontFamily(
 fun NewReportScreen(
     pickedLocation: Pair<Double, Double>?,
     onImagePicked: (Uri) -> Unit = {},
-    onAddLocation: () -> Unit = {},
     onPublish: (
         description: String,
         name: String,
         phone: String,
         isLost: Boolean,
         imageUrl: String,
-        lat: Double?,
-        lng: Double?
+        lat: Double,
+        lng: Double
     ) -> Unit
 ) {
     val context = LocalContext.current
@@ -60,9 +59,7 @@ fun NewReportScreen(
     var cameraUri by remember { mutableStateOf<Uri?>(null) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var uploading by remember { mutableStateOf(false) }
-    var uploadedUrl by remember { mutableStateOf<String?>(null) }
-    val reportVm = remember { ReportViewModel() }
-    val uiState by reportVm.uiState.collectAsState()
+
 
 
     val galleryLauncher = rememberLauncherForActivityResult(
@@ -103,7 +100,6 @@ fun NewReportScreen(
 
     var showPicker by remember { mutableStateOf(false) }
     var currentPicked by remember(pickedLocation) { mutableStateOf(pickedLocation) }
-
     // --- Wrap in a Box to center the Column both vertically & horizontally ---
     Box(
         modifier = Modifier
@@ -283,12 +279,13 @@ fun NewReportScreen(
                     fontSize = 16.sp,
                 )
             }
-            if (pickedLocation != null) {
-                Text("📍 Location set (${pickedLocation.first}, ${pickedLocation.second})")
-            }
+
+
             currentPicked?.let { (lat, lng) ->
                 Text("📍 Location set ($lat, $lng)")
             }
+
+
 
             if (showPicker) {
                 MapPickerDialog(
@@ -301,7 +298,13 @@ fun NewReportScreen(
 
             // --- Publish Report ---
             Button(
-                onClick = { selectedImageUri?.let { uri ->
+                onClick = {
+                    val picked = currentPicked
+                    if (picked == null) {
+                        return@Button
+                    }
+                    val (lat, lng) = picked
+                    selectedImageUri?.let { uri ->
                     uploading = true
                     CloudinaryUploader.upload(context, uri) { url ->
                         uploading = false
@@ -313,8 +316,8 @@ fun NewReportScreen(
                                 phone,
                                 isLost,
                                 imageUrl,
-                                currentPicked?.first,
-                                currentPicked?.second
+                                lat,
+                                lng
                             )
                         }
                     }

@@ -5,7 +5,6 @@ import kotlinx.serialization.json.Json
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -21,7 +20,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.FirebaseApp
-import dev.gitlive.firebase.Firebase
 import org.example.project.ui.ProfileScreen
 import org.example.project.ui.bottomBar.AppTopBar
 import org.example.project.ui.bottomBar.BottomBar
@@ -35,7 +33,6 @@ import org.example.project.data.report.ReportViewModel
 import androidx.compose.runtime.remember
 import org.example.project.data.report.ReportModel
 import org.example.project.data.report.ReportUiState
-import org.example.project.ui.report.MapPickerScreen
 import org.example.project.ui.report.MyReportsScreen
 import org.example.project.ui.report.ReportDetailsScreen
 import java.net.URLDecoder
@@ -216,7 +213,6 @@ class MainActivity : ComponentActivity() {
                             NewReportScreen(
                                 pickedLocation = pickedLocation,
                                 onImagePicked = { /* ... */ },
-                                onAddLocation = { navController.navigate("pick-location") }
                             ) { description, name, phone, isLost, imageUrl, lat, lng ->
                                 reportVm.saveReport(
                                     description = description,
@@ -278,17 +274,7 @@ class MainActivity : ComponentActivity() {
                                 onBack = { navController.popBackStack() }
                             )
                         }
-                        composable("pick-location") {
-                            MapPickerScreen(
-                                onCancel = { navController.popBackStack() },
-                                onPick = { lat, lng ->
-                                    navController.previousBackStackEntry
-                                        ?.savedStateHandle
-                                        ?.set("picked_location", Pair(lat, lng))
-                                    navController.popBackStack()
-                                }
-                            )
-                        }
+
                     }
 
                 }
