@@ -28,7 +28,7 @@ struct MyReportsView: View {
                         // ② wrap row in a NavigationLink to details
                         NavigationLink {
                             ReportDetailsView(report: rpt)
-                                .navigationTitle("report details")
+                                .navigationTitle("Report Details")
                                 .navigationBarTitleDisplayMode(.inline)
                         } label: {
                             ReportRow(report: rpt)

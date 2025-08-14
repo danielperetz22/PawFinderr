@@ -21,7 +21,7 @@ struct FeedView: View {
     @State private var isLoadingReports = false
     @State private var reportsError: String?
 
-    // Pin selection → details
+    // Pin selection
     @State private var selectedReport: ReportModel? = nil
 
     var body: some View {
@@ -41,14 +41,18 @@ struct FeedView: View {
                             let coord = CLLocationCoordinate2D(latitude: lat, longitude: lng)
                             Annotation("", coordinate: coord) {
                                 VStack(spacing: 2) {
-                                    Button {
-                                        selectedReport = rpt
+                                    // Make the pin itself navigate
+                                    NavigationLink {
+                                        ReportDetailsView(report: rpt)
+                                            .navigationTitle("Report Details")
+                                            .navigationBarTitleDisplayMode(.inline)
                                     } label: {
                                         Image(systemName: "mappin.circle.fill")
                                             .font(.title)
                                             .foregroundColor(.red)
                                             .shadow(radius: 2)
                                     }
+
                                     Text(rpt.name.isEmpty ? (rpt.isLost ? "Lost" : "Found") : rpt.name)
                                         .font(.caption2)
                                         .lineLimit(1)
@@ -98,23 +102,15 @@ struct FeedView: View {
             if reports.isEmpty { reloadReports() }
             if userCoordinate == nil { locateMe() }
         }
-        // Present details without changing ReportDetailsView
-        .navigationDestination(item: $selectedReport) { rpt in
-            NavigationStack {
-                ReportDetailsView(report: rpt)
-            }
-        }
         .navigationBarTitleDisplayMode(.inline)
+        // Removed: local NavigationStack + navigationDestination
     }
-
-
 
     private func reloadReports() {
         guard !isLoadingReports else { return }
         isLoadingReports = true
         reportsError = nil
 
-        // KMM suspend fun bridged as a completion handler
         Shared.ReportRepositoryImpl().getAllReports { list, error in
             DispatchQueue.main.async {
                 self.isLoadingReports = false
@@ -133,7 +129,6 @@ struct FeedView: View {
             }
         }
     }
-
 
     private func locateMe() {
         guard !isLocating else { return }

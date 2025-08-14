@@ -111,7 +111,7 @@ struct EditReportView: View {
                 .padding(.bottom, 16)
             }
         }
-        .navigationTitle("Edit report")
+        .navigationTitle("Edit Report")
         .navigationBarTitleDisplayMode(.inline)
     }
 }

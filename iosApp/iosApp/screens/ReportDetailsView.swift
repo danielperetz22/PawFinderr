@@ -104,7 +104,7 @@ struct ReportDetailsView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
         }
-        .navigationTitle("report details")
+        .navigationTitle("Report Details")
         .navigationBarTitleDisplayMode(.inline)
         .alert("Delete report?", isPresented: $showDeleteConfirm) {
             Button("Delete", role: .destructive) { onDelete() }
