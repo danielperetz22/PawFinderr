@@ -1,13 +1,18 @@
 import SwiftUI
+import MapKit
+import CoreLocation
 import Shared
 
 struct ReportDetailsView: View {
     let report: ReportModel
-    var onEdit: () -> Void = {}          // optional callback if you still want it
+    var onEdit: () -> Void = {}
     var onDelete: () -> Void = {}
 
     @State private var showEdit = false
     @State private var showDeleteConfirm = false
+
+    // Address state
+    @State private var isGeocoding = false
 
     var body: some View {
         ZStack {
@@ -46,24 +51,45 @@ struct ReportDetailsView: View {
                             .font(.body)
                     }
 
-                    // Location (optional)
-                    if let loc = report.location, !loc.isEmpty {
+                    // Location map + address
+                    if let lat = safeLat, let lng = safeLng {
+                        Map(initialPosition: .region(region(for: lat, lng))) {
+                            // Pin
+                            Annotation("", coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lng)) {
+                                Image(systemName: "mappin.circle.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.red)
+                                    .shadow(radius: 1)
+                            }
+                        }
+                        .frame(height: 200)
+                        .cornerRadius(12)
+
+                        // Address line
                         HStack(alignment: .firstTextBaseline, spacing: 6) {
                             Text("📍")
-                            Text(loc).font(.body)
+                            if isGeocoding {
+                                Text("Resolving address…")
+                                    .foregroundColor(.secondary)
+                            } else if !addressText.isEmpty {
+                                Text(addressText).font(.body)
+                            } else {
+                                Text(String(format: "Lat %.5f, Lng %.5f", lat, lng))
+                                    .foregroundColor(.secondary)
+                            }
                         }
+                    } else {
+                        // No coords available
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.white)
+                            .frame(height: 140)
+                            .overlay(
+                                Text("No location available")
+                                    .foregroundColor(.secondary)
+                            )
                     }
 
-                    // Map placeholder
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.white)
-                        .frame(height: 140)
-                        .overlay(
-                            Text("map")
-                                .foregroundColor(.secondary)
-                        )
-
-                    Spacer().frame(height: 104) // leave room for the two buttons
+                    Spacer().frame(height: 104) // room for buttons
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 16)
@@ -73,10 +99,9 @@ struct ReportDetailsView: View {
             VStack(spacing: 10) {
                 Spacer()
 
-                // Edit
                 Button {
                     showEdit = true
-                    onEdit() // keep your external callback if you need analytics etc.
+                    onEdit()
                 } label: {
                     Text("Edit")
                         .font(.custom("BalooBhaijaan2-Bold", size: 16))
@@ -86,7 +111,6 @@ struct ReportDetailsView: View {
                         .cornerRadius(8)
                 }
 
-                // Delete
                 Button(role: .destructive) {
                     showDeleteConfirm = true
                 } label: {
@@ -112,14 +136,68 @@ struct ReportDetailsView: View {
         } message: {
             Text("This action cannot be undone.")
         }
-        // NAVIGATION goes on the root view, not on the Button
         .navigationDestination(isPresented: $showEdit) {
             EditReportView(report: report) { description, name, phone, isLost in
-                // Handle save inside EditReportView via your shared VM.
-                // If you want to pop back after saving:
-                // (EditReportView can dismiss itself or call a closure.)
                 showEdit = false
             }
+        }
+        .task {
+            // kick off reverse‑geocoding if we have coordinates
+            if let lat = safeLat, let lng = safeLng {
+                await reverseGeocode(lat: lat, lng: lng)
+            }
+        }
+    }
+
+    // MARK: - Helpers
+
+    private var safeLat: Double? {
+        let lat = report.lat
+        return lat.isNaN ? nil : lat
+    }
+    private var safeLng: Double? {
+        let lng = report.lng
+        return lng.isNaN ? nil : lng
+    }
+
+    private func region(for lat: Double, _ lng: Double) -> MKCoordinateRegion {
+        MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: lat, longitude: lng),
+            span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+        )
+    }
+
+    @MainActor
+    private func reverseGeocode(lat: Double, lng: Double) async {
+        isGeocoding = true
+        defer { isGeocoding = false }
+
+        let geocoder = CLGeocoder()
+        let location = CLLocation(latitude: lat, longitude: lng)
+
+        do {
+            let placemarks = try await geocoder.reverseGeocodeLocation(location)
+            if let pm = placemarks.first {
+                // Build a friendly address
+                let parts = [
+                    pm.name,
+                    pm.thoroughfare,
+                    pm.subThoroughfare,
+                    pm.locality,
+                    pm.administrativeArea,
+                    pm.country
+                ]
+                let joined = parts
+                    .compactMap { $0 }
+                    .filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+                    .joined(separator: ", ")
+                self.addressText = joined
+            } else {
+                self.addressText = ""
+            }
+        } catch {
+            // Don’t block UI if geocoder fails
+            self.addressText = ""
         }
     }
 }
