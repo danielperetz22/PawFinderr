@@ -62,9 +62,7 @@ struct EditReportView: View {
                         .foregroundColor(isLostValue ? .red : Color("PrimaryPink"))
 
                     HStack(spacing: 10) {
-                        Button {
-                            isLostValue = true
-                        } label: {
+                        Button { isLostValue = true } label: {
                             Text("Lost")
                                 .font(.custom("BalooBhaijaan2-Bold", size: 16))
                                 .foregroundColor(.white)
@@ -72,9 +70,7 @@ struct EditReportView: View {
                                 .background(isLostValue ? Color.red : Color("PrimaryPink").opacity(0.5))
                                 .cornerRadius(12)
                         }
-                        Button {
-                            isLostValue = false
-                        } label: {
+                        Button { isLostValue = false } label: {
                             Text("Found")
                                 .font(.custom("BalooBhaijaan2-Bold", size: 16))
                                 .foregroundColor(.white)
@@ -88,6 +84,7 @@ struct EditReportView: View {
                     LabeledEditor(title: "contact me :", text: $phoneText)
                     LabeledEditor(title: "name :",        text: $nameText)
 
+                    // Address only (no map)
                     HStack(alignment: .firstTextBaseline, spacing: 10) {
                         Text("📍")
                         Group {
@@ -103,9 +100,7 @@ struct EditReportView: View {
                             }
                         }
                         Spacer(minLength: 8)
-                        Button {
-                            showLocationPicker = true
-                        } label: {
+                        Button { showLocationPicker = true } label: {
                             HStack(spacing: 6) {
                                 Image(systemName: "pencil").font(.system(size: 14, weight: .bold))
                                 Text("Change location").font(.system(size: 14, weight: .semibold))
@@ -117,23 +112,6 @@ struct EditReportView: View {
                             .cornerRadius(8)
                             .shadow(color: Color.black.opacity(0.15), radius: 3, x: 0, y: 2)
                         }
-                    }
-
-                    if let c = coords {
-                        Map(initialPosition: .region(MKCoordinateRegion(center: c, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)))) {
-                            Annotation("", coordinate: c) {
-                                Image(systemName: "mappin.circle.fill").font(.title2).foregroundColor(.red)
-                            }
-                        }
-                        .frame(height: 180)
-                        .cornerRadius(20)
-                        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(.systemGray4), lineWidth: 1))
-                    } else {
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.white)
-                            .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color(.systemGray4), lineWidth: 1))
-                            .frame(height: 180)
-                            .overlay(Text("map").foregroundColor(.secondary))
                     }
 
                     Spacer().frame(height: 108)
@@ -259,7 +237,6 @@ private struct LocationPickerView: View {
     }
 }
 
-// --- existing helper view stays the same ---
 private struct LabeledEditor: View {
     let title: String
     @Binding var text: String
