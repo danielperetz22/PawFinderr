@@ -131,10 +131,8 @@ struct FeedView: View {
                     self.reports = []
                     return
                 }
-                if let arr = list as? [ReportModel] {
+                if let arr = list {
                     self.reports = arr
-                } else if let anyArr = list as? [Any] {
-                    self.reports = anyArr.compactMap { $0 as? ReportModel }
                 } else {
                     self.reports = []
                 }

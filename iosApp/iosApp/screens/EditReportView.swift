@@ -3,6 +3,7 @@ import MapKit
 import CoreLocation
 import Shared
 
+
 struct EditReportView: View {
     let report: ReportModel
     var onSave: (_ description: String,
@@ -31,9 +32,9 @@ struct EditReportView: View {
         self.report = report
         self.onSave = onSave
         _descriptionText = State(initialValue: report.description_)
-        _nameText        = State(initialValue: report.name)
-        _phoneText       = State(initialValue: report.phone)
-        _isLostValue     = State(initialValue: report.isLost)
+        _nameText = State(initialValue: report.name)
+        _phoneText = State(initialValue: report.phone)
+        _isLostValue = State(initialValue: report.isLost)
 
         if !report.lat.isNaN, !report.lng.isNaN {
             _coords = State(initialValue: CLLocationCoordinate2D(latitude: report.lat, longitude: report.lng))
@@ -48,6 +49,26 @@ struct EditReportView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
+                    
+                    HStack(spacing: 10) {
+                        ToggleButton(
+                            title: "Lost",
+                            isSelected: isLostValue,
+                            selectedColor: .secondaryPink,
+                            unselectedColor: .primaryPink,
+                            cornerRadius: 12
+                        ) { isLostValue = true }
+
+                        ToggleButton(
+                            title: "Found",
+                            isSelected: !isLostValue,
+                            selectedColor: .secondaryPink,
+                            unselectedColor: .primaryPink,
+                            cornerRadius: 8
+                        ) { isLostValue = false }
+                    }
+
+                    
                     if !report.imageUrl.isEmpty, let url = URL(string: report.imageUrl) {
                         AsyncImage(url: url) { img in img.resizable().scaledToFill() }
                         placeholder: { Color.gray.opacity(0.2) }
@@ -57,44 +78,17 @@ struct EditReportView: View {
                         .cornerRadius(8)
                     }
 
-                    Text(isLostValue ? "lost!" : "found!")
-                        .font(.title2.weight(.bold))
-                        .foregroundColor(isLostValue ? .red : Color("PrimaryPink"))
 
-                    HStack(spacing: 10) {
-                        Button { isLostValue = true } label: {
-                            Text("Lost")
-                                .font(.custom("BalooBhaijaan2-Bold", size: 16))
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity, minHeight: 44)
-                                .background(isLostValue ? Color.red : Color("PrimaryPink").opacity(0.5))
-                                .cornerRadius(12)
-                        }
-                        Button { isLostValue = false } label: {
-                            Text("Found")
-                                .font(.custom("BalooBhaijaan2-Bold", size: 16))
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity, minHeight: 44)
-                                .background(!isLostValue ? Color("PrimaryPink") : Color("PrimaryPink").opacity(0.5))
-                                .cornerRadius(8)
-                        }
-                    }
 
-                    LabeledEditor(title: "description :", text: $descriptionText, multiline: true)
-                    LabeledEditor(title: "contact me :", text: $phoneText)
-                    LabeledEditor(title: "name :",        text: $nameText)
+                    FloatingLabelTextField(text: $descriptionText, label: "description",placeholder: "Edit description" )
+                    FloatingLabelTextField(text: $phoneText, label: "phone number", placeholder: "Edit phone number").keyboardType(.phonePad)
+                    FloatingLabelTextField(text: $nameText, label: "name", placeholder: "Edit name" )
 
-                    // Address only (no map)
                     HStack(alignment: .firstTextBaseline, spacing: 10) {
                         Text("📍")
                         Group {
                             if isGeocoding {
                                 Text("Resolving address…").foregroundColor(.secondary)
-                            } else if let c = coords, !addressText.isEmpty {
-                                Text(addressText).font(.body)
-                            } else if let c = coords {
-                                Text(String(format: "Lat %.5f, Lng %.5f", c.latitude, c.longitude))
-                                    .foregroundColor(.secondary)
                             } else {
                                 Text("No location set yet").foregroundColor(.secondary)
                             }
@@ -116,7 +110,7 @@ struct EditReportView: View {
 
                     Spacer().frame(height: 108)
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 24)
                 .padding(.top, 16)
             }
 
@@ -170,7 +164,6 @@ struct EditReportView: View {
     }
 }
 
-// MARK: - Location Picker (sheet dialog)
 private struct LocationPickerView: View {
     @Environment(\.dismiss) private var dismiss
 
@@ -237,30 +230,3 @@ private struct LocationPickerView: View {
     }
 }
 
-private struct LabeledEditor: View {
-    let title: String
-    @Binding var text: String
-    var multiline: Bool = false
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title).font(.caption).foregroundColor(.secondary)
-            if multiline {
-                TextEditor(text: $text)
-                    .font(.custom("BalooBhaijaan2-Bold", size: 16))
-                    .frame(minHeight: 100)
-                    .padding(10)
-                    .background(Color.white)
-                    .cornerRadius(12)
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(.systemGray4), lineWidth: 1))
-            } else {
-                TextField("", text: $text)
-                    .font(.custom("BalooBhaijaan2-Bold", size: 16))
-                    .padding(12)
-                    .background(Color.white)
-                    .cornerRadius(12)
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(.systemGray4), lineWidth: 1))
-            }
-        }
-    }
-}

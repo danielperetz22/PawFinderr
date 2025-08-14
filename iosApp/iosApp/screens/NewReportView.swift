@@ -41,7 +41,6 @@ struct NewReportView: View {
             VStack(spacing: 16) {
                 Spacer()
 
-                // MARK: Lost / Found toggle
                 HStack(spacing: 8) {
                     ToggleButton(
                         title: "Lost",
@@ -58,7 +57,6 @@ struct NewReportView: View {
                     ) { isLost = false }
                 }
 
-                // MARK: Image picker (only the plus button is tappable)
                 ZStack(alignment: .bottomTrailing) {
                     if let uiImage = selectedImage {
                         Image(uiImage: uiImage)
@@ -69,13 +67,12 @@ struct NewReportView: View {
                             .cornerRadius(8)
                     } else {
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(Color("BackgroundGray"))
+                            .fill(Color.backgroundGray)
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(Color.gray, lineWidth: 1)
                             .frame(maxWidth: .infinity, maxHeight: 180)
                     }
 
-                    // Only this is tappable
                     Button {
                         showPhotoOptions = true
                     } label: {
@@ -83,7 +80,7 @@ struct NewReportView: View {
                             .font(.system(size: 20, weight: .bold))
                             .foregroundColor(.white)
                             .frame(width: 44, height: 44)
-                            .background(Color("SecondaryPink"))
+                            .background(Color.darkGreen)
                             .cornerRadius(8)
                             .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2)
                     }
@@ -114,7 +111,6 @@ struct NewReportView: View {
                 ZStack(alignment: .topLeading) {
                     TextEditor(text: $description)
                         .padding(12)
-                        .font(.custom("BalooBhaijaan2-Bold", size: 16))
                         .scrollContentBackground(.hidden)
                         .background(Color("BackgroundGray"))
                         .cornerRadius(8)
@@ -133,25 +129,25 @@ struct NewReportView: View {
                     }
                 }
 
-                TextField("Add your name here", text: $name)
-                    .padding(12)
-                    .font(.custom("BalooBhaijaan2-Bold", size: 16))
-                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(.gray), lineWidth: 1))
+                FloatingLabelTextField(
+                    text: $name,
+                    label: "name",
+                    placeholder: "Add your name here"
+                )
 
-                TextField("+972.....", text: $phone)
-                    .keyboardType(.phonePad)
-                    .padding(12)
-                    .font(.custom("BalooBhaijaan2-Bold", size: 16))
-                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(.gray), lineWidth: 1))
+                FloatingLabelTextField(
+                    text: $phone,
+                    label: "contact",
+                    placeholder: "+972..."
+                ).keyboardType(.phonePad)
 
-                // MARK: Location
                 Button {
-                    onAddLocation()                 // keep your callback, if needed
-                    showLocationPicker = true       // open the picker dialog
+                    onAddLocation()
+                    showLocationPicker = true
                 } label: {
                     Text("📍  Add location")
                         .foregroundColor(Color("PrimaryPink"))
-                        .frame(maxWidth: .infinity)
+                        .frame(maxWidth: .infinity, minHeight: 48)
                         .padding()
                         .font(.custom("BalooBhaijaan2-Bold", size: 16))
                         .background(Color.white.opacity(0.8))
@@ -298,26 +294,6 @@ private struct LocationPickerView: View {
     }
 }
 
-private struct ToggleButton: View {
-    let title: String
-    let isSelected: Bool
-    let selectedColor: Color    // SecondaryPink
-    let unselectedColor: Color  // PrimaryPink
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .fontWeight(.semibold)
-                .foregroundColor(.white)
-                .font(.custom("BalooBhaijaan2-Bold", size: 16))
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(isSelected ? selectedColor : unselectedColor)
-                .cornerRadius(8)
-        }
-    }
-}
 
 struct NewReportView_Previews: PreviewProvider {
     static var previews: some View {
