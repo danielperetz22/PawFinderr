@@ -81,7 +81,7 @@ struct RegisterView: View {
     var body: some View {
         NavigationStack {
             NavigationLink(
-                destination: FeedView(onSignOut: { /* handle sign-out */ }) ,
+                destination: FeedView() ,
                 isActive: $didRegister
             ) {EmptyView()}
             ZStack {

@@ -9,14 +9,16 @@ struct ReportsContainerView: View {
     NewReportView(
       onAddPhoto:    { },
       onAddLocation: { },
-      onPublish:     { description, name, phone, isLost, imageUrl in
+      onPublish:     { description, name, phone, isLost, imageUrl, lat, lng in
         reportVm.saveReport(
           description: description,
           name:        name,
           phone:       phone,
           imageUrl:    imageUrl,
           isLost:      isLost,
-          location:    nil
+          location: nil,
+          lat: lat,
+          lng: lng
         )
       }
     )

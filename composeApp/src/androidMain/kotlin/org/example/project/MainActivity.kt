@@ -55,7 +55,8 @@ class MainActivity : ComponentActivity() {
                 fun shouldShowBars(route: String?): Boolean =
                     route in barRoutes ||
                             route?.startsWith("new-report") == true ||
-                            route?.startsWith("report-details") == true
+                            route?.startsWith("report-details") == true ||
+                            route?.startsWith("edit-report") == true
 
                 fun titleFor(route: String?): String = when {
                     route == "feed"                 -> "Feed"
@@ -63,6 +64,8 @@ class MainActivity : ComponentActivity() {
                     route == "reports"              -> "My Reports"
                     route?.startsWith("new-report") == true -> "New Report"
                     route?.startsWith("report-details") == true -> "Report Details"
+                    route?.startsWith("edit-report") == true -> "Edit Report"
+
                     else -> route.orEmpty()
                         .replaceFirstChar { it.uppercaseChar() }
                         .replace('-', ' ')
@@ -79,9 +82,7 @@ class MainActivity : ComponentActivity() {
                             ?.replaceFirstChar { it.uppercaseChar() }
                             ?: ""
                         if (shouldShowBars(currentRoute)) {
-//                            val titleText = titleMap[currentRoute] ?: currentRoute.orEmpty()
-//                                .replaceFirstChar { it.uppercaseChar() }
-//                                .replace('-', ' ')
+
                             AppTopBar(
                                 title = titleFor(currentRoute),
                                 onBackClick = { navController.popBackStack() }
@@ -216,11 +217,11 @@ class MainActivity : ComponentActivity() {
                             ) { description, name, phone, isLost, imageUrl, lat, lng ->
                                 reportVm.saveReport(
                                     description = description,
-                                    name        = name,
-                                    phone       = phone,
-                                    imageUrl    = imageUrl,
-                                    isLost      = isLost,
-                                    location    = null,
+                                    name = name,
+                                    phone = phone,
+                                    imageUrl = imageUrl,
+                                    isLost = isLost,
+                                    location = null,
                                     lat = lat,
                                     lng=lng
                                 )
@@ -273,7 +274,6 @@ class MainActivity : ComponentActivity() {
 
                             ReportDetailsScreen(
                                 report = report,
-                                onBack = { navController.popBackStack() },
                                 onEdit = {
                                     val json = Json.encodeToString(report)
                                     val encoded =
@@ -306,17 +306,18 @@ class MainActivity : ComponentActivity() {
 
                             EditReportScreen(
                                 report = report,
-                                onSave = { description, name, phone, isLost ->
+                                onSave = { description, name, phone, isLost, lat, lng ->
                                     reportVm.updateReport(
                                         reportId = report.id,
                                         description = description,
                                         name = name,
                                         phone = phone,
-                                        isLost = isLost
+                                        isLost = isLost,
+                                        lat = lat,
+                                        lng = lng
                                     )
                                 }
                             )
-
                             LaunchedEffect(uiState) {
                                 if (uiState is ReportUiState.UpdateSuccess) {
                                     navController.navigate("reports") {

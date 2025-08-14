@@ -35,7 +35,7 @@ struct BottomBar: View {
 
     var body: some View {
         TabView {
-            FeedView(onSignOut: { session.signOut() })
+            FeedView()
                 .tabItem {
                     Label("Feed",   systemImage: "pin")
                 }
