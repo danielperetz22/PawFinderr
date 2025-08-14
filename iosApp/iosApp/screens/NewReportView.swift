@@ -74,37 +74,45 @@ struct NewReportView: View {
                                 .fill(Color("BackgroundGray"))
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(Color.gray, lineWidth: 1)
+                                .frame(maxWidth: .infinity, maxHeight: 180)
                         }
-
-                        Text("+")
-                            .font(.custom("BalooBhaijaan2-Bold", size: 16))
-                            .foregroundColor(.white)
-                            .padding(8)
-                            .background(Color("SecondaryPink").opacity(0.5))
-                            .clipShape(Circle())
-                            .padding(6)
+                        
+                        // Only this is tappable
+                        Button {
+                            showPhotoOptions = true
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.white)
+                                .frame(width: 44, height: 44)
+                                .background(Color.darkGreen)
+                                .cornerRadius(8)
+                                .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2)
+                        }
+                        .padding(8)
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 180)
-                }
-                .confirmationDialog("Select image source",
-                                    isPresented: $showPhotoOptions,
-                                    titleVisibility: .visible) {
-                    Button("Photos") {
-                        imagePickerSource = .photoLibrary
-                        showImagePicker = true
-                    }
-                    if UIImagePickerController.isSourceTypeAvailable(.camera) {
-                        Button("Camera") {
-                            imagePickerSource = .camera
+                    .confirmationDialog("Select image source",
+                                        isPresented: $showPhotoOptions,
+                                        titleVisibility: .visible) {
+                        Button("Photos") {
+                            imagePickerSource = .photoLibrary
                             showImagePicker = true
                         }
+                        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+                            Button("Camera") {
+                                imagePickerSource = .camera
+                                showImagePicker = true
+                            }
+                        }
+                        Button("Cancel", role: .cancel) { }
                     }
-                    Button("Cancel", role: .cancel) { }
+                                        .sheet(isPresented: $showImagePicker) {
+                                            ImagePicker(sourceType: imagePickerSource, selectedImage: $selectedImage)
+                                        }
                 }
-                .sheet(isPresented: $showImagePicker) {
-                    ImagePicker(sourceType: imagePickerSource, selectedImage: $selectedImage)
-                }
+
 
                 ZStack(alignment: .topLeading) {
                     TextEditor(text: $description)
