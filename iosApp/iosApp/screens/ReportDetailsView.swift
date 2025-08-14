@@ -8,12 +8,21 @@ struct ReportDetailsView: View {
     var onEdit: () -> Void = {}
     var onDelete: () -> Void = {}
 
+    @State private var current: ReportModel
     @State private var showEdit = false
     @State private var showDeleteConfirm = false
 
     // Address state
     @State private var addressText: String = ""
     @State private var isGeocoding = false
+    @State private var savingError: String?
+
+    init(report: ReportModel, onEdit: @escaping () -> Void = {}, onDelete: @escaping () -> Void = {}) {
+        self.report = report
+        self.onEdit  = onEdit
+        self.onDelete = onDelete
+        _current = State(initialValue: report)
+    }
 
     var body: some View {
         ZStack {
@@ -23,7 +32,7 @@ struct ReportDetailsView: View {
                 VStack(alignment: .leading, spacing: 16) {
 
                     // Image
-                    if !report.imageUrl.isEmpty, let url = URL(string: report.imageUrl) {
+                    if !current.imageUrl.isEmpty, let url = URL(string: current.imageUrl) {
                         AsyncImage(url: url) { img in
                             img.resizable().scaledToFill()
                         } placeholder: {
@@ -32,30 +41,29 @@ struct ReportDetailsView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 200)
                         .clipped()
-                        .cornerRadius(12)
+                        .cornerRadius(8)
                     }
 
                     // Lost / Found
-                    Text(report.isLost ? "lost!" : "found!")
+                    Text(current.isLost ? "lost!" : "found!")
                         .font(.title2.weight(.bold))
-                        .foregroundColor(report.isLost ? .red : Color("PrimaryPink"))
+                        .foregroundColor(current.isLost ? .red : Color("PrimaryPink"))
 
                     // Description
-                    LabeledLine(title: "description :", text: report.description_)
+                    LabeledLine(title: "description :", text: current.description_)
 
                     // Contact
-                    LabeledLine(title: "contact me :", text: report.phone.isEmpty ? "—" : report.phone)
+                    LabeledLine(title: "contact me :", text: current.phone.isEmpty ? "—" : current.phone)
 
                     // Name
-                    if !report.name.isEmpty {
-                        Text(report.name)
+                    if !current.name.isEmpty {
+                        Text(current.name)
                             .font(.body)
                     }
 
                     // Location map + address
                     if let lat = safeLat, let lng = safeLng {
                         Map(initialPosition: .region(region(for: lat, lng))) {
-                            // Pin
                             Annotation("", coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lng)) {
                                 Image(systemName: "mappin.circle.fill")
                                     .font(.title2)
@@ -66,12 +74,10 @@ struct ReportDetailsView: View {
                         .frame(height: 200)
                         .cornerRadius(12)
 
-                        // Address line
                         HStack(alignment: .firstTextBaseline, spacing: 6) {
                             Text("📍")
                             if isGeocoding {
-                                Text("Resolving address…")
-                                    .foregroundColor(.secondary)
+                                Text("Resolving address…").foregroundColor(.secondary)
                             } else if !addressText.isEmpty {
                                 Text(addressText).font(.body)
                             } else {
@@ -80,17 +86,13 @@ struct ReportDetailsView: View {
                             }
                         }
                     } else {
-                        // No coords available
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color.white)
                             .frame(height: 140)
-                            .overlay(
-                                Text("No location available")
-                                    .foregroundColor(.secondary)
-                            )
+                            .overlay(Text("No location available").foregroundColor(.secondary))
                     }
 
-                    Spacer().frame(height: 104) // room for buttons
+                    Spacer().frame(height: 104)
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 16)
@@ -137,27 +139,76 @@ struct ReportDetailsView: View {
         } message: {
             Text("This action cannot be undone.")
         }
+        .alert("Save failed", isPresented: .constant(savingError != nil)) {
+            Button("OK") { savingError = nil }
+        } message: {
+            Text(savingError ?? "")
+        }
         .navigationDestination(isPresented: $showEdit) {
-            EditReportView(report: report) { description, name, phone, isLost in
-                showEdit = false
+            EditReportView(report: current) { description, name, phone, isLost, lat, lng in
+                let repo = Shared.ReportRepositoryImpl()
+
+                // Kotlin nullable primitive wrappers (adjust to NSNumber? if your headers use that)
+                func kBool(_ v: Bool?) -> KotlinBoolean?   { v.map { KotlinBoolean(bool: $0) } }
+                func kDouble(_ v: Double?) -> KotlinDouble? { v.map { KotlinDouble(double: $0) } }
+
+                repo.updateReport(
+                    reportId: current.id,
+                    description: description,
+                    name: name,
+                    phone: phone,
+                    imageUrl: nil,
+                    isLost: kBool(isLost),
+                    location: nil,
+                    lat: kDouble(lat),
+                    lng: kDouble(lng),
+                    completionHandler: { error in
+                        Task { @MainActor in
+                            if let error = error {
+                                self.savingError = error.localizedDescription
+                                return
+                            }
+                            self.current = ReportModel(
+                                id: current.id,
+                                userId: current.userId,
+                                description: description,
+                                name: name,
+                                phone: phone,
+                                imageUrl: current.imageUrl,
+                                isLost: isLost,
+                                location: current.location,
+                                lat: lat ?? current.lat,
+                                lng: lng ?? current.lng,
+                                createdAt: current.createdAt               // ← required
+                            )
+                            self.showEdit = false
+
+                            if let lat = self.safeLat, let lng = self.safeLng {
+                                await self.reverseGeocode(lat: lat, lng: lng)
+                            } else {
+                                self.addressText = ""
+                            }
+
+                            NotificationCenter.default.post(name: .reportsDidChange, object: nil)
+                        }
+                    }
+                )
             }
         }
         .task {
-            // kick off reverse‑geocoding if we have coordinates
             if let lat = safeLat, let lng = safeLng {
                 await reverseGeocode(lat: lat, lng: lng)
             }
         }
     }
 
-    // MARK: - Helpers
 
     private var safeLat: Double? {
-        let lat = report.lat
+        let lat = current.lat
         return lat.isNaN ? nil : lat
     }
     private var safeLng: Double? {
-        let lng = report.lng
+        let lng = current.lng
         return lng.isNaN ? nil : lng
     }
 
@@ -179,25 +230,15 @@ struct ReportDetailsView: View {
         do {
             let placemarks = try await geocoder.reverseGeocodeLocation(location)
             if let pm = placemarks.first {
-                // Build a friendly address
-                let parts = [
-                    pm.name,
-                    pm.thoroughfare,
-                    pm.subThoroughfare,
-                    pm.locality,
-                    pm.administrativeArea,
-                    pm.country
-                ]
-                let joined = parts
-                    .compactMap { $0 }
-                    .filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+                let parts = [pm.name, pm.thoroughfare, pm.subThoroughfare, pm.locality, pm.administrativeArea, pm.country]
+                self.addressText = parts.compactMap { $0 }
+                    .map { $0.trimmingCharacters(in: .whitespaces) }
+                    .filter { !$0.isEmpty }
                     .joined(separator: ", ")
-                self.addressText = joined
             } else {
                 self.addressText = ""
             }
         } catch {
-            // Don’t block UI if geocoder fails
             self.addressText = ""
         }
     }
@@ -218,4 +259,8 @@ private struct LabeledLine: View {
             }
         }
     }
+}
+
+extension Notification.Name {
+    static let reportsDidChange = Notification.Name("reportsDidChange")
 }
