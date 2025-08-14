@@ -12,6 +12,7 @@ struct ReportDetailsView: View {
     @State private var showDeleteConfirm = false
 
     // Address state
+    @State private var addressText: String = ""
     @State private var isGeocoding = false
 
     var body: some View {
