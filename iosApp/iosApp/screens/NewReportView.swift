@@ -58,7 +58,6 @@ struct NewReportView: View {
                     ) { isLost = false }
                 }
 
-                // MARK: Photo placeholder
                 Button {
                     showPhotoOptions = true
                 } label: {
@@ -107,7 +106,6 @@ struct NewReportView: View {
                     ImagePicker(sourceType: imagePickerSource, selectedImage: $selectedImage)
                 }
 
-                // MARK: Description
                 ZStack(alignment: .topLeading) {
                     TextEditor(text: $description)
                         .padding(12)
@@ -130,20 +128,17 @@ struct NewReportView: View {
                     }
                 }
 
-                // MARK: Name
                 TextField("Add your name here", text: $name)
                     .padding(12)
                     .font(.custom("BalooBhaijaan2-Bold", size: 16))
                     .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(.gray), lineWidth: 1))
 
-                // MARK: Phone
                 TextField("+972.....", text: $phone)
                     .keyboardType(.phonePad)
                     .padding(12)
                     .font(.custom("BalooBhaijaan2-Bold", size: 16))
                     .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(.gray), lineWidth: 1))
 
-                // MARK: Add Location
                 Button {
                     // If you have a map picker, open it here:
                     onAddLocation()
@@ -183,7 +178,6 @@ struct NewReportView: View {
                         .font(.footnote)
                 }
 
-                // MARK: Publish Report
                 Button {
                     guard let uiImage = selectedImage,
                           let jpegData = uiImage.jpegData(compressionQuality: 0.8),
@@ -223,11 +217,9 @@ struct NewReportView: View {
             }
             .padding(.horizontal, 24)
         }
-        // BONUS: if your container gets a location and wants to inject it, you can observe a Notification or use a binding.
     }
 }
 
-// MARK: – Reusable Toggle Button with custom colors
 private struct ToggleButton: View {
     let title: String
     let isSelected: Bool

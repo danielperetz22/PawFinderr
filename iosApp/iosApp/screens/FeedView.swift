@@ -5,10 +5,9 @@ import Shared
 struct FeedView: View {
     @EnvironmentObject private var session: SessionStore
 
-    // Map state
     @State private var cameraPosition: MapCameraPosition = .region(
         MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 32.0853, longitude: 34.7818), // TLV fallback
+            center: CLLocationCoordinate2D(latitude: 32.0853, longitude: 34.7818),
             span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
         )
     )
@@ -16,13 +15,12 @@ struct FeedView: View {
     @State private var isLocating = false
     @State private var locationError: String?
 
-    // Reports
     @State private var reports: [ReportModel] = []
     @State private var isLoadingReports = false
     @State private var reportsError: String?
 
-    // Pin selection
     @State private var selectedReport: ReportModel? = nil
+    @State private var showNewReport = false
 
     var body: some View {
         ZStack {
@@ -30,10 +28,8 @@ struct FeedView: View {
 
             VStack(spacing: 16) {
                 Map(position: $cameraPosition) {
-                    // Native blue dot (requires location permission)
                     UserAnnotation()
 
-                    // Red, tappable pins
                     ForEach(reports, id: \.id) { rpt in
                         let lat = rpt.lat
                         let lng = rpt.lng
@@ -41,7 +37,6 @@ struct FeedView: View {
                             let coord = CLLocationCoordinate2D(latitude: lat, longitude: lng)
                             Annotation("", coordinate: coord) {
                                 VStack(spacing: 2) {
-                                    // Make the pin itself navigate
                                     NavigationLink {
                                         ReportDetailsView(report: rpt)
                                             .navigationTitle("Report Details")
@@ -52,7 +47,6 @@ struct FeedView: View {
                                             .foregroundColor(.red)
                                             .shadow(radius: 2)
                                     }
-
                                     Text(rpt.name.isEmpty ? (rpt.isLost ? "Lost" : "Found") : rpt.name)
                                         .font(.caption2)
                                         .lineLimit(1)
@@ -64,7 +58,7 @@ struct FeedView: View {
                 .frame(maxWidth: .infinity)
                 .frame(maxHeight: .infinity)
                 .padding(.top, 32)
-                .padding(.bottom, 80)
+                .padding(.bottom, 16)
                 .overlay(alignment: .topTrailing) {
                     HStack(spacing: 8) {
                         if isLoadingReports { ProgressView().padding(8) }
@@ -83,7 +77,23 @@ struct FeedView: View {
                                 .clipShape(Circle())
                         }
                     }
-                    .padding(12)
+                    .padding(16)
+                }
+
+                HStack {
+                    Spacer()
+                    Button {
+                        showNewReport = true
+                    } label: {
+                        Image(systemName: "plus")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 44, height: 44)
+                            .background(Color.darkGreen)
+                            .cornerRadius(8)
+                            .shadow(color: Color.black.opacity(0.2),
+                                    radius: 4, x: 0, y: 2)
+                    }
                 }
 
                 if isLocating { ProgressView("Getting your location…") }
@@ -94,7 +104,7 @@ struct FeedView: View {
                     Text(rerr).font(.footnote).foregroundColor(.red).padding(.horizontal)
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 24)
             .padding(.bottom, 16)
         }
         .onAppear { session.currentTitle = "Feed" }
@@ -103,7 +113,9 @@ struct FeedView: View {
             if userCoordinate == nil { locateMe() }
         }
         .navigationBarTitleDisplayMode(.inline)
-        // Removed: local NavigationStack + navigationDestination
+        .sheet(isPresented: $showNewReport) {
+            ReportsContainerView()
+        }
     }
 
     private func reloadReports() {
