@@ -29,6 +29,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.rememberAsyncImagePainter
@@ -135,9 +137,16 @@ fun NewReportScreen(
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (isLost) Color(0xFFF69092) else Color(0xFFFEB0B2),
-                        contentColor   = Color.White
+                        contentColor = Color.White
                     )
-                ) { Text("Lost") }
+                ) {
+                    Text(
+                        "Lost",
+                        fontFamily = balooBhaijaan2Family,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                    )
+                }
 
                 Button(
                     onClick = { isLost = false },
@@ -147,9 +156,16 @@ fun NewReportScreen(
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (!isLost) Color(0xFFF69092) else Color(0xFFFEB0B2),
-                        contentColor   = Color.White
+                        contentColor = Color.White
                     )
-                ) { Text("Found") }
+                ) {
+                    Text(
+                        "Found",
+                        fontFamily = balooBhaijaan2Family,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                    )
+                }
             }
 
             Spacer(Modifier.height(16.dp))
@@ -161,8 +177,7 @@ fun NewReportScreen(
                     .height(200.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .background(Color(0xFFF0F0F0))
-                    .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
-                    .clickable { showDialog = true },
+                    .border(1.dp, Color.Gray, RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.BottomEnd
             ) {
                 selectedImageUri?.let { uri ->
@@ -175,14 +190,14 @@ fun NewReportScreen(
                         contentScale = ContentScale.Crop
                     )
                 }
-                Box(
-                    modifier = Modifier
-                        .padding(12.dp)
-                        .size(28.dp)
-                        .background(Color(0xFFF69092), CircleShape),
-                    contentAlignment = Alignment.Center
+
+                SmallFloatingActionButton(
+                    onClick = { showDialog = true },
+                    modifier = Modifier.padding(12.dp),
+                    containerColor = Color(0xFF90D1D8),
+                    contentColor = Color.White
                 ) {
-                    Text("+", color = Color.White, fontSize = 18.sp)
+                    Icon(Icons.Default.Add, contentDescription = "New report")
                 }
             }
 

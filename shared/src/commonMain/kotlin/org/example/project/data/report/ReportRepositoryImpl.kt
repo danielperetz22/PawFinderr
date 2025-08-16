@@ -35,8 +35,10 @@ class ReportRepositoryImpl(
         phone: String?,
         imageUrl: String?,
         isLost: Boolean?,
-        location: String?
-    ) = firebase.updateReport(reportId, description, name, phone, imageUrl, isLost, location)
+        location: String?,
+        lat: Double?,
+        lng: Double?
+    ) = firebase.updateReport(reportId, description, name, phone, imageUrl, isLost, location, lat, lng)
 
     override suspend fun deleteReport(reportId: String) =
         firebase.deleteReport(reportId)

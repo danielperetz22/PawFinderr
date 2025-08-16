@@ -158,7 +158,9 @@ class RemoteFirebaseRepository : FirebaseRepository {
         phone: String?,
         imageUrl: String?,
         isLost: Boolean?,
-        location: String?
+        location: String?,
+        lat: Double?,
+        lng: Double?
     ) {
         // build a partial update map (only fields you pass != null will be updated)
         val data = mutableMapOf<String, Any>()
@@ -168,8 +170,11 @@ class RemoteFirebaseRepository : FirebaseRepository {
         imageUrl?.let    { data["imageUrl"]    = it }
         isLost?.let      { data["isLost"]      = it }
         location?.let    { data["location"]    = it }
+        lat?.let {data["lat"] = it}
+        lng?.let {data["kng"] = it}
 
-        if (data.isEmpty()) return // nothing to update
+
+      if (data.isEmpty()) return // nothing to update
 
         Firebase.firestore
             .collection("reports")
