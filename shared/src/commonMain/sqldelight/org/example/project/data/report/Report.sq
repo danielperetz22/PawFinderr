@@ -1,0 +1,54 @@
+import kotlin.Boolean;
+
+
+-- Table schema
+CREATE TABLE reports (
+  id         TEXT    NOT NULL PRIMARY KEY,
+  userId     TEXT    NOT NULL,
+  description TEXT   NOT NULL,
+  name       TEXT    NOT NULL,
+  phone      TEXT    NOT NULL,
+  imageUrl   TEXT    NOT NULL,
+  isLost     INTEGER AS Boolean NOT NULL,
+  location   TEXT,             -- nullable
+  lat        REAL    NOT NULL, -- Double; you can store Double.NaN if unknown
+  lng        REAL    NOT NULL, -- Double; you can store Double.NaN if unknown
+  createdAt  INTEGER NOT NULL  -- Long epoch millis
+);
+
+-- Optional but recommended: index to speed up "my reports" sorted by recency
+CREATE INDEX reports_user_created_idx ON reports(userId, createdAt DESC);
+
+-- Queries
+
+selectAll:
+SELECT *
+FROM reports
+ORDER BY createdAt DESC;
+
+selectByUser:
+SELECT *
+FROM reports
+WHERE userId = ?
+ORDER BY createdAt DESC;
+
+selectById:
+SELECT *
+FROM reports
+WHERE id = ?;
+
+insertReport:
+INSERT INTO reports(
+  id, userId, description, name, phone, imageUrl, isLost, location, lat, lng, createdAt
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- Upsert without ON CONFLICT: works with PRIMARY KEY(id)
+upsertReport:
+INSERT OR REPLACE INTO reports(
+  id, userId, description, name, phone, imageUrl, isLost, location, lat, lng, createdAt
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteReport:
+DELETE FROM reports WHERE id = ?;

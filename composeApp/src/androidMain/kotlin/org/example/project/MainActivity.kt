@@ -20,7 +20,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.FirebaseApp
-import org.example.project.ui.ProfileScreen
+import org.example.project.ui.profile.ProfileScreen
 import org.example.project.ui.bottomBar.AppTopBar
 import org.example.project.ui.bottomBar.BottomBar
 import org.example.project.ui.home.HomeScreen
@@ -249,19 +249,19 @@ class MainActivity : ComponentActivity() {
                                 is ReportUiState.ReportsLoaded -> (uiState as ReportUiState.ReportsLoaded).reports
                                 else -> emptyList()
                             }
+                            val isLoading = uiState is ReportUiState.LoadingReports
 
                             MyReportsScreen(
                                 reports = reports,
+                                isLoading = isLoading,
                                 onPublishClicked = { navController.navigate("new-report") },
                                 onItemClick = { rpt ->
-                                    val json = kotlinx.serialization.json.Json.encodeToString(rpt)
-                                    val encoded =
-                                        java.net.URLEncoder.encode(json, Charsets.UTF_8.name())
+                                    val json = Json.encodeToString(rpt)
+                                    val encoded = java.net.URLEncoder.encode(json, Charsets.UTF_8.name())
                                     navController.navigate("report-details/$encoded")
                                 }
                             )
                         }
-
                         composable("report-details/{reportJson}") { backStackEntry ->
                             val raw = backStackEntry.arguments?.getString("reportJson").orEmpty()
                             val decoded = URLDecoder.decode(raw, Charsets.UTF_8.name())

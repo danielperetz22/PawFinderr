@@ -1,21 +1,18 @@
-package org.example.project.ui
+package org.example.project.ui.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SmallFloatingActionButton
@@ -40,7 +37,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import org.example.project.R
 import org.example.project.ui.components.LoadingAnimation
 import org.example.project.ui.home.AndroidUserViewModel
-import org.example.project.user.UserViewModel
 
 
 private val balooBhaijaan2Family = FontFamily(

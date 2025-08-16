@@ -1,5 +1,6 @@
 package org.example.project
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import com.cloudinary.android.MediaManager
@@ -7,6 +8,7 @@ import com.cloudinary.android.MediaManager
 
 class MyApp : Application() {
     companion object {
+        @SuppressLint("StaticFieldLeak")
         lateinit var ctx: Context
             private set
     }
