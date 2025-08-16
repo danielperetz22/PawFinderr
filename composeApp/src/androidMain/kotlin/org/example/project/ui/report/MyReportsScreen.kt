@@ -1,3 +1,4 @@
+// MyReportsScreen.kt
 package org.example.project.ui.report
 
 import androidx.compose.foundation.clickable
@@ -18,36 +19,44 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import org.example.project.data.report.ReportModel
+import org.example.project.ui.components.LoadingAnimation   // ← add this import
 
 @Composable
 fun MyReportsScreen(
     reports: List<ReportModel>,
     onPublishClicked: () -> Unit,
-    onItemClick: (ReportModel) -> Unit = {}
+    onItemClick: (ReportModel) -> Unit = {},
+    isLoading: Boolean = false                      // ← NEW
 ) {
-
-
-    // Sort by newest first (replace "timestamp" with your actual field)
     val sortedReports = reports.sortedByDescending { it.id }
-    // or .sortedByDescending { it.timestamp } if you have one
 
-    Box(
-        Modifier
-            .fillMaxSize()
-    ) {
-        if (sortedReports.isEmpty()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("No reports yet")
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(
-                    top = 36.dp,
+    Box(Modifier.fillMaxSize()) {
+
+        when {
+            isLoading -> {
+                // Centered loader overlay
+                LoadingAnimation(
+                    isLoading = true,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = 56.dp) // leaves a bit of room above bottom bar if any
                 )
-            ) {
-                items(sortedReports, key = { it.id }) { rpt ->
-                    ReportItem(rpt = rpt, onClick = { onItemClick(rpt) })
+            }
+
+            sortedReports.isEmpty() -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("No reports yet")
+                }
+            }
+
+            else -> {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(top = 36.dp)
+                ) {
+                    items(sortedReports, key = { it.id }) { rpt ->
+                        ReportItem(rpt = rpt, onClick = { onItemClick(rpt) })
+                    }
                 }
             }
         }
@@ -65,14 +74,12 @@ fun MyReportsScreen(
     }
 }
 
-
 @Composable
 private fun ReportItem(
     rpt: ReportModel,
     onClick: () -> Unit
 ) {
     val title = if (rpt.name.isNotBlank()) rpt.name else rpt.description
-
 
     Card(
         Modifier
@@ -117,16 +124,10 @@ private fun ReportItem(
                 }
                 Spacer(Modifier.height(6.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    AssistChip(
-                        onClick = {},
-                        label = { Text(if (rpt.isLost) "Lost" else "Found") }
-                    )
+                    AssistChip(onClick = {}, label = { Text(if (rpt.isLost) "Lost" else "Found") })
                     if (rpt.phone.isNotBlank()) {
                         Spacer(Modifier.width(8.dp))
-                        Text(
-                            text = rpt.phone,
-                            style = MaterialTheme.typography.bodySmall
-                        )
+                        Text(text = rpt.phone, style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }

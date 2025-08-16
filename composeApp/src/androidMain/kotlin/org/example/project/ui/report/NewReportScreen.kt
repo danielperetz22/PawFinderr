@@ -27,13 +27,14 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.rememberAsyncImagePainter
 import org.example.project.CloudinaryUploader
-import org.example.project.data.report.ReportViewModel
 
 private val balooBhaijaan2Family = FontFamily(
     Font(R.font.baloobhaijaan2_regular,   FontWeight.Normal),
@@ -42,6 +43,7 @@ private val balooBhaijaan2Family = FontFamily(
     Font(R.font.baloobhaijaan2_bold,      FontWeight.Bold),
     Font(R.font.baloobhaijaan2_extrabold, FontWeight.ExtraBold)
 )
+
 @Composable
 fun NewReportScreen(
     pickedLocation: Pair<Double, Double>?,
@@ -62,7 +64,8 @@ fun NewReportScreen(
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var uploading by remember { mutableStateOf(false) }
 
-
+    // NEW: error message
+    var errorText by remember { mutableStateOf<String?>(null) }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
@@ -70,6 +73,7 @@ fun NewReportScreen(
         uri?.let {
             selectedImageUri = it
             onImagePicked(it)
+            errorText = null // clear error if user fixed it
         }
     }
 
@@ -80,6 +84,7 @@ fun NewReportScreen(
             cameraUri?.let {
                 selectedImageUri = it
                 onImagePicked(it)
+                errorText = null
             }
         }
     }
@@ -94,7 +99,6 @@ fun NewReportScreen(
             ?: error("Couldn't create URI for camera image")
     }
 
-
     var isLost by remember { mutableStateOf(true) }
     var description by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
@@ -102,7 +106,7 @@ fun NewReportScreen(
 
     var showPicker by remember { mutableStateOf(false) }
     var currentPicked by remember(pickedLocation) { mutableStateOf(pickedLocation) }
-    // --- Wrap in a Box to center the Column both vertically & horizontally ---
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -113,10 +117,12 @@ fun NewReportScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth(0.9f)
-                .wrapContentHeight(),
+                .verticalScroll(rememberScrollState())
+                .imePadding()
+                .navigationBarsPadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // --- Lost / Found toggle ---
+            // Lost / Found toggle (unchanged) …
             Row(
                 Modifier
                     .fillMaxWidth()
@@ -164,6 +170,7 @@ fun NewReportScreen(
 
             Spacer(Modifier.height(16.dp))
 
+            // Photo picker (unchanged) …
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -173,7 +180,6 @@ fun NewReportScreen(
                     .border(1.dp, Color.Gray, RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.BottomEnd
             ) {
-                // show selected image if any
                 selectedImageUri?.let { uri ->
                     Image(
                         painter = rememberAsyncImagePainter(uri),
@@ -185,7 +191,6 @@ fun NewReportScreen(
                     )
                 }
 
-                // ONLY this is pressable (same visual as your other FAB)
                 SmallFloatingActionButton(
                     onClick = { showDialog = true },
                     modifier = Modifier.padding(12.dp),
@@ -196,7 +201,6 @@ fun NewReportScreen(
                 }
             }
 
-            // AlertDialog to choose camera vs gallery
             if (showDialog) {
                 AlertDialog(
                     onDismissRequest = { showDialog = false },
@@ -206,28 +210,26 @@ fun NewReportScreen(
                         TextButton(onClick = {
                             galleryLauncher.launch("image/*")
                             showDialog = false
-                        }) {
-                            Text("gallery")
-                        }
+                        }) { Text("gallery") }
                     },
                     dismissButton = {
                         TextButton(onClick = {
                             cameraUri = createImageUri()
                             cameraLauncher.launch(cameraUri!!)
                             showDialog = false
-                        }) {
-                            Text("photo")
-                        }
+                        }) { Text("photo") }
                     }
                 )
             }
 
             Spacer(Modifier.height(16.dp))
 
-            // --- Description field ---
             OutlinedTextField(
                 value = description,
-                onValueChange = { description = it },
+                onValueChange = {
+                    description = it
+                    if (it.isNotBlank()) errorText = null
+                },
                 label = { Text("Description") },
                 placeholder = { Text("Enter a description about the dog") },
                 modifier = Modifier
@@ -239,10 +241,12 @@ fun NewReportScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            // --- Name field ---
             OutlinedTextField(
                 value = name,
-                onValueChange = { name = it },
+                onValueChange = {
+                    name = it
+                    if (it.isNotBlank()) errorText = null
+                },
                 label = { Text("Name") },
                 placeholder = { Text("Add your name here") },
                 modifier = Modifier.fillMaxWidth()
@@ -250,21 +254,20 @@ fun NewReportScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            // --- Phone field ---
             OutlinedTextField(
                 value = phone,
-                onValueChange = { phone = it },
+                onValueChange = {
+                    phone = it
+                    if (it.isNotBlank()) errorText = null
+                },
                 label = { Text("Phone") },
                 placeholder = { Text("+972.....") },
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Phone
-                )
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
             )
 
             Spacer(Modifier.height(12.dp))
 
-            // --- Add Location button with emoji ---
             OutlinedButton(
                 onClick = { showPicker = true },
                 modifier = Modifier
@@ -274,58 +277,73 @@ fun NewReportScreen(
                 border = BorderStroke(2.dp, Color.White),
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = Color.White.copy(alpha = 0.3f),
-                    contentColor   = Color(0xFFFFC0C0) // Primary pink
+                    contentColor   = Color(0xFFFFC0C0)
                 )
-            ) {
-                Text("📍  Add location",
-                    fontFamily = balooBhaijaan2Family,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                )
-            }
-
+            ) { Text("📍  Add location") }
 
             currentPicked?.let { (lat, lng) ->
                 Text("📍 Location set ($lat, $lng)")
             }
 
-
-
             if (showPicker) {
                 MapPickerDialog(
                     onDismiss = { showPicker = false },
-                    onPicked  = { lat, lng -> currentPicked = lat to lng }
+                    onPicked  = { lat, lng ->
+                        currentPicked = lat to lng
+                        errorText = null
+                    }
                 )
             }
 
             Spacer(Modifier.height(12.dp))
 
-            // --- Publish Report ---
+            // NEW: error label
+            if (errorText != null) {
+                Text(
+                    errorText!!,
+                    color = Color(0xFFD32F2F),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(4.dp))
+            }
+
             Button(
                 onClick = {
-                    val picked = currentPicked
-                    if (picked == null) {
+                    // VALIDATION
+                    val missing =
+                        description.isBlank() ||
+                                name.isBlank() ||
+                                phone.isBlank() ||
+                                selectedImageUri == null ||
+                                currentPicked == null
+
+                    if (missing) {
+                        errorText = "Please fill all fields, add a photo, and set a location."
                         return@Button
                     }
-                    val (lat, lng) = picked
+
+                    val (lat, lng) = currentPicked!!
                     selectedImageUri?.let { uri ->
-                    uploading = true
-                    CloudinaryUploader.upload(context, uri) { url ->
-                        uploading = false
-                        url?.let { imageUrl ->
-                            // pass all your current inputs plus the Cloudinary URL:
-                            onPublish(
-                                description,
-                                name,
-                                phone,
-                                isLost,
-                                imageUrl,
-                                lat,
-                                lng
-                            )
+                        uploading = true
+                        errorText = null
+                        CloudinaryUploader.upload(context, uri) { url ->
+                            uploading = false
+                            url?.let { imageUrl ->
+                                onPublish(
+                                    description,
+                                    name,
+                                    phone,
+                                    isLost,
+                                    imageUrl,
+                                    lat,
+                                    lng
+                                )
+                            } ?: run {
+                                errorText = "Image upload failed. Please try again."
+                            }
                         }
                     }
-                }},
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(44.dp),
@@ -345,7 +363,6 @@ fun NewReportScreen(
                     Text(
                         "Publish Report",
                         fontSize = 16.sp,
-                        fontFamily = balooBhaijaan2Family,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -353,4 +370,3 @@ fun NewReportScreen(
         }
     }
 }
-
