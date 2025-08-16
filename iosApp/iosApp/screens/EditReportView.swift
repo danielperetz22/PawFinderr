@@ -2,6 +2,8 @@ import SwiftUI
 import MapKit
 import CoreLocation
 import Shared
+import PhotosUI
+
 
 
 struct EditReportView: View {
@@ -11,7 +13,8 @@ struct EditReportView: View {
                  _ phone: String,
                  _ isLost: Bool,
                  _ lat: Double?,
-                 _ lng: Double?) -> Void
+                 _ lng: Double?,
+                 _ imageUrl: String?) -> Void
 
     // Local editable copies
     @State private var descriptionText: String
@@ -24,10 +27,13 @@ struct EditReportView: View {
     @State private var addressText: String = ""
     @State private var isGeocoding = false
     @State private var showLocationPicker = false
+    
+    @State private var pickedItem: PhotosPickerItem?
+    @State private var pickedImageData: Data?
 
     init(
         report: ReportModel,
-        onSave: @escaping (_ description: String, _ name: String, _ phone: String, _ isLost: Bool, _ lat: Double?, _ lng: Double?) -> Void
+        onSave: @escaping (_ description: String, _ name: String, _ phone: String, _ isLost: Bool, _ lat: Double?, _ lng: Double?, _ imageUrl: String?) -> Void
     ) {
         self.report = report
         self.onSave = onSave
@@ -69,15 +75,80 @@ struct EditReportView: View {
                     }
 
                     
-                    if !report.imageUrl.isEmpty, let url = URL(string: report.imageUrl) {
-                        AsyncImage(url: url) { img in img.resizable().scaledToFill() }
-                        placeholder: { Color.gray.opacity(0.2) }
+                    // --- Image with overlay floating buttons ---
+                    ZStack(alignment: .bottomTrailing) {
+                        // Image preview (picked image takes precedence)
+                        Group {
+                            if let data = pickedImageData, let uiimg = UIImage(data: data) {
+                                Image(uiImage: uiimg)
+                                    .resizable()
+                                    .scaledToFill()
+                            } else if !report.imageUrl.isEmpty, let url = URL(string: report.imageUrl) {
+                                AsyncImage(url: url) { img in
+                                    img.resizable().scaledToFill()
+                                } placeholder: {
+                                    Color.gray.opacity(0.2)
+                                }
+                            } else {
+                                Color.gray.opacity(0.15)
+                            }
+                        }
                         .frame(maxWidth: .infinity)
                         .frame(height: 220)
                         .clipped()
                         .cornerRadius(8)
-                    }
 
+                        // --- Image with overlay floating buttons ---
+                        Group {
+                            if let data = pickedImageData, let uiimg = UIImage(data: data) {
+                                Image(uiImage: uiimg).resizable().scaledToFill()
+                            } else if !report.imageUrl.isEmpty, let url = URL(string: report.imageUrl) {
+                                AsyncImage(url: url) { img in img.resizable().scaledToFill() }
+                                    placeholder: { Color.gray.opacity(0.2) }
+                            } else {
+                                Color.gray.opacity(0.15)
+                            }
+                        }
+                        .frame(maxWidth: .infinity).frame(height: 220).clipped().cornerRadius(8)
+
+                        // bottom-leading: Revert (only when a new image is picked)
+                        .overlay(alignment: .bottomLeading) {
+                            if pickedImageData != nil {
+                                Button { pickedImageData = nil } label: {
+                                    Image(systemName: "xmark")
+                                        .font(.system(size: 20, weight: .bold))
+                                        .foregroundColor(.white)
+                                        .frame(width: 44, height: 44)
+                                        .background(Color.darkGreen)
+                                        .cornerRadius(8)
+                                        .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2)
+                                }
+                                .padding(12)
+                            }
+                        }
+
+                        // bottom-trailing: Edit (PhotosPicker)
+                        .overlay(alignment: .bottomTrailing) {
+                            PhotosPicker(selection: $pickedItem, matching: .images) {
+                                Image(systemName: "pencil")
+                                    .font(.system(size: 20, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .frame(width: 44, height: 44)
+                                    .background(Color.darkGreen)
+                                    .cornerRadius(8)
+                                    .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2)
+                            }
+                            .padding(12)
+                        }
+
+                    }
+                    .onChange(of: pickedItem) { newItem in
+                      Task {
+                        if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                          pickedImageData = data
+                        }
+                      }
+                    }
 
 
                     FloatingLabelTextField(text: $descriptionText, label: "description",placeholder: "Edit description" )
@@ -85,28 +156,35 @@ struct EditReportView: View {
                     FloatingLabelTextField(text: $nameText, label: "name", placeholder: "Edit name" )
 
                     HStack(alignment: .firstTextBaseline, spacing: 10) {
-                        Text("📍")
-                        Group {
-                            if isGeocoding {
-                                Text("Resolving address…").foregroundColor(.secondary)
-                            } else {
-                                Text("No location set yet").foregroundColor(.secondary)
-                            }
+                        if isGeocoding {
+                            Text("Resolving address…").foregroundColor(.secondary)
+                        } else if !addressText.isEmpty {
+                            Text(addressText)
+                                .foregroundColor(.primary)
+                                .lineLimit(nil)
+                        } else if let c = coords {
+                            Text(String(format: "Lat %.5f, Lng %.5f", c.latitude, c.longitude))
+                                .foregroundColor(.secondary)
+                        } else {
+                            Text("No location set yet").foregroundColor(.secondary)
                         }
+
                         Spacer(minLength: 8)
                         Button { showLocationPicker = true } label: {
                             HStack(spacing: 6) {
-                                Image(systemName: "pencil").font(.system(size: 14, weight: .bold))
-                                Text("Change location").font(.system(size: 14, weight: .semibold))
+                                Text("Change location").font(.custom("BalooBhaijaan2-Bold", size: 16))
                             }
-                            .foregroundColor(.white)
+                            .foregroundColor(Color.primaryPink)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 8)
-                            .background(Color("PrimaryPink"))
-                            .cornerRadius(8)
-                            .shadow(color: Color.black.opacity(0.15), radius: 3, x: 0, y: 2)
+                            .background(Color.white.opacity(0.7))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.white, lineWidth: 1)
+                                )
                         }
                     }
+
 
                     Spacer().frame(height: 108)
                 }
@@ -117,7 +195,41 @@ struct EditReportView: View {
             VStack {
                 Spacer()
                 Button {
-                    onSave(descriptionText, nameText, phoneText, isLostValue, coords?.latitude, coords?.longitude)
+                    Task {
+                        var finalUrl: String? = nil
+                        if let data = pickedImageData {
+                            finalUrl = try? await CloudinaryUploader.upload(imageData: data)
+                        }
+
+                        let isLostArg: KotlinBoolean? =
+                            KotlinBoolean(bool: isLostValue)
+
+                        let latArg: KotlinDouble? =
+                            coords.map { KotlinDouble(double: $0.latitude) }
+
+                        let lngArg: KotlinDouble? =
+                            coords.map { KotlinDouble(double: $0.longitude) }
+
+                        ReportRepositoryImpl().updateReport(
+                            reportId: report.id,
+                            description: descriptionText,
+                            name:        nameText,
+                            phone:       phoneText,
+                            imageUrl:    finalUrl,
+                            isLost:      isLostArg,
+                            location:    nil,
+                            lat:         latArg,
+                            lng:         lngArg
+                        ) { error in
+                            if let error {
+                                print("Update failed: \(error)")
+                            } else {
+                                print("Update succeeded")
+                                onSave(descriptionText, nameText, phoneText, isLostValue,
+                                       coords?.latitude, coords?.longitude, finalUrl)
+                            }
+                        }
+                    }
                 } label: {
                     Text("Save changes")
                         .font(.custom("BalooBhaijaan2-Bold", size: 16))
@@ -126,8 +238,10 @@ struct EditReportView: View {
                         .background(Color("PrimaryPink"))
                         .cornerRadius(14)
                 }
+
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)
+
             }
         }
         .navigationTitle("Edit Report")
@@ -230,3 +344,13 @@ private struct LocationPickerView: View {
     }
 }
 
+extension CloudinaryUploader {
+  static func upload(imageData data: Data) async throws -> String {
+    try await withCheckedThrowingContinuation { cont in
+      upload(data) { url in
+        if let url { cont.resume(returning: url) }
+        else { cont.resume(throwing: NSError(domain: "Cloudinary", code: -1)) }
+      }
+    }
+  }
+}

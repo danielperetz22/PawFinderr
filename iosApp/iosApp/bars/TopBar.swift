@@ -21,16 +21,13 @@ struct TopBar<Content: View>: View {
         // MARK: – UINavigationBarAppearance configuration
                 let navAppearance = UINavigationBarAppearance()
                 navAppearance.configureWithOpaqueBackground()
-                // רקע לבן חצי־שקוף
                 navAppearance.backgroundColor = UIColor.white.withAlphaComponent(0.3)
-                // צבע טקסט הכותרת (inline ו-large)
                 navAppearance.titleTextAttributes = [
                     .foregroundColor: UIColor.darkGray
                 ]
                 navAppearance.largeTitleTextAttributes = [
                     .foregroundColor: UIColor.darkGray
                 ]
-                // צל תחתון בדומה ל־TabBar שלך
                 navAppearance.shadowColor = UIColor(
                     red:   144.0/255.0,
                     green: 209.0/255.0,

@@ -21,7 +21,7 @@ struct MyReportsView: View {
                     Text(err).foregroundColor(.red)
                 } else if reports.isEmpty {
                     Text("No reports yet")
-                        .font(.title2)
+                        .font(.custom("BalooBhaijaan2-Bold", size: 24))
                         .foregroundColor(.gray)
                 } else {
                     List(reports, id: \.id) { rpt in
@@ -37,6 +37,7 @@ struct MyReportsView: View {
                         .listRowBackground(Color.clear)
                     }
                     .listStyle(.plain)
+                    .padding(.bottom, 12)
                 }
 
                 // Floating + button
@@ -48,7 +49,7 @@ struct MyReportsView: View {
                             showNewReport = true
                         } label: {
                             Image(systemName: "plus")
-                                .font(.system(size: 20, weight: .bold))
+                                .font(.custom("BalooBhaijaan2-Bold", size: 20))
                                 .foregroundColor(.white)
                                 .frame(width: 44, height: 44)
                                 .background(Color.darkGreen)
@@ -104,19 +105,21 @@ struct ReportRow: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(report.name.isEmpty ? "Untitled" : report.name)
-                    .font(.headline)
+                    .font(.custom("BalooBhaijaan2-Bold", size: 16))
 
                 let desc = report.description_
                 if !desc.isEmpty {
                     Text(desc)
-                        .font(.subheadline)
+                        .font(.custom("BalooBhaijaan2-Regular", size: 16))
                         .foregroundColor(.secondary)
+                        .truncationMode(.tail)
+                        .fixedSize(horizontal: false, vertical: true)
                         .lineLimit(2)
                 }
 
                 HStack {
                     Text(report.isLost ? "Lost" : "Found")
-                        .font(.caption)
+                        .font(.custom("BalooBhaijaan2-Bold", size: 16))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(Color("PrimaryPink"))
@@ -125,13 +128,14 @@ struct ReportRow: View {
 
                     if !report.phone.isEmpty {
                         Text(report.phone)
-                            .font(.caption)
+                            .font(.custom("BalooBhaijaan2-Regular", size: 16))
                             .foregroundColor(.secondary)
                     }
                 }
             }
             Spacer()
         }
+        .frame(height: 120)
         .padding(14)
         .background(Color.white)
         .cornerRadius(14)

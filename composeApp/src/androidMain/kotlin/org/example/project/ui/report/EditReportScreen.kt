@@ -362,7 +362,7 @@ private fun LocationEditor(
                 if (lat == null || lng == null) "Pick location" else "Change location",
                 fontFamily = balooBhaijaan2Family,
                 fontWeight = FontWeight.Bold,
-                fontSize   = 14.sp
+                fontSize   = 16.sp
             )
         }
 
