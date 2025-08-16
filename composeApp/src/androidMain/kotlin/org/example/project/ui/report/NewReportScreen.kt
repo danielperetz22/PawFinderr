@@ -27,6 +27,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.Image
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.rememberAsyncImagePainter
@@ -129,13 +131,15 @@ fun NewReportScreen(
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (isLost) Color(0xFFF69092) else Color(0xFFFEB0B2),
-                        contentColor   = Color.White
+                        contentColor = Color.White
                     )
                 ) {
-                    Text("Lost",
+                    Text(
+                        "Lost",
                         fontFamily = balooBhaijaan2Family,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,)
+                        fontSize = 16.sp,
+                    )
                 }
 
                 Button(
@@ -146,13 +150,15 @@ fun NewReportScreen(
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (!isLost) Color(0xFFF69092) else Color(0xFFFEB0B2),
-                        contentColor   = Color.White
+                        contentColor = Color.White
                     )
                 ) {
-                    Text("Found",
+                    Text(
+                        "Found",
                         fontFamily = balooBhaijaan2Family,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,)
+                        fontSize = 16.sp,
+                    )
                 }
             }
 
@@ -164,11 +170,10 @@ fun NewReportScreen(
                     .height(200.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .background(Color(0xFFF0F0F0))
-                    .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
-                    .clickable { showDialog = true },
+                    .border(1.dp, Color.Gray, RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.BottomEnd
             ) {
-                // if we have a URI, show it via Coil…
+                // show selected image if any
                 selectedImageUri?.let { uri ->
                     Image(
                         painter = rememberAsyncImagePainter(uri),
@@ -180,15 +185,14 @@ fun NewReportScreen(
                     )
                 }
 
-                // …and always overlay the "+" button in the corner
-                Box(
-                    modifier = Modifier
-                        .padding(12.dp)
-                        .size(28.dp)
-                        .background(Color(0xFFF69092), CircleShape),
-                    contentAlignment = Alignment.Center
+                // ONLY this is pressable (same visual as your other FAB)
+                SmallFloatingActionButton(
+                    onClick = { showDialog = true },
+                    modifier = Modifier.padding(12.dp),
+                    containerColor = Color(0xFF90D1D8),
+                    contentColor = Color.White
                 ) {
-                    Text("+", color = Color.White, fontSize = 18.sp)
+                    Icon(Icons.Default.Add, contentDescription = "New report")
                 }
             }
 
@@ -293,7 +297,7 @@ fun NewReportScreen(
                     onPicked  = { lat, lng -> currentPicked = lat to lng }
                 )
             }
-            
+
             Spacer(Modifier.height(12.dp))
 
             // --- Publish Report ---

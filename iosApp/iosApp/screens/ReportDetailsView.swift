@@ -1,23 +1,38 @@
 import SwiftUI
+import MapKit
+import CoreLocation
 import Shared
 
 struct ReportDetailsView: View {
     let report: ReportModel
-    var onEdit: () -> Void = {}          // optional callback if you still want it
+    var onEdit: () -> Void = {}
     var onDelete: () -> Void = {}
 
+    @State private var current: ReportModel
     @State private var showEdit = false
     @State private var showDeleteConfirm = false
+
+    // Address state
+    @State private var addressText: String = ""
+    @State private var isGeocoding = false
+    @State private var savingError: String?
+
+    init(report: ReportModel, onEdit: @escaping () -> Void = {}, onDelete: @escaping () -> Void = {}) {
+        self.report = report
+        self.onEdit  = onEdit
+        self.onDelete = onDelete
+        _current = State(initialValue: report)
+    }
 
     var body: some View {
         ZStack {
             Color("BackgroundGray").ignoresSafeArea()
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
 
                     // Image
-                    if !report.imageUrl.isEmpty, let url = URL(string: report.imageUrl) {
+                    if !current.imageUrl.isEmpty, let url = URL(string: current.imageUrl) {
                         AsyncImage(url: url) { img in
                             img.resizable().scaledToFill()
                         } placeholder: {
@@ -26,57 +41,69 @@ struct ReportDetailsView: View {
                         .frame(maxWidth: .infinity)
                         .frame(height: 200)
                         .clipped()
-                        .cornerRadius(12)
+                        .cornerRadius(8)
                     }
 
-                    // Lost / Found
-                    Text(report.isLost ? "lost!" : "found!")
-                        .font(.title2.weight(.bold))
-                        .foregroundColor(report.isLost ? .red : Color("PrimaryPink"))
+                    // Lost / Found — always dark green, custom font
+                    Text(current.isLost ? "lost!" : "found!")
+                        .font(.custom("BalooBhaijaan2-Bold", size: 28))
+                        .foregroundColor(Color.darkGreen)
 
-                    // Description
-                    LabeledLine(title: "description :", text: report.description_)
-
-                    // Contact
-                    LabeledLine(title: "contact me :", text: report.phone.isEmpty ? "—" : report.phone)
-
-                    // Name
-                    if !report.name.isEmpty {
-                        Text(report.name)
-                            .font(.body)
+                    // Inline fields (title bold, value not)
+                    LabeledInline(title: "description :", value: current.description_)
+                    LabeledInline(title: "contact me :", value: current.phone.isEmpty ? "—" : current.phone)
+                    if !current.name.isEmpty {
+                        LabeledInline(title: "", value: current.name)
                     }
 
-                    // Location (optional)
-                    if let loc = report.location, !loc.isEmpty {
-                        HStack(alignment: .firstTextBaseline, spacing: 6) {
-                            Text("📍")
-                            Text(loc).font(.body)
+                    // Location map + address line
+                    if let lat = safeLat, let lng = safeLng {
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
+                            Image(systemName: "mappin.and.ellipse")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(Color("PrimaryPink"))
+                            Text(addressText.isEmpty
+                                 ? String(format: "Lat %.5f, Lng %.5f", lat, lng)
+                                 : addressText)
+                            .font(.custom("BalooBhaijaan2-Medium", size: 16))
+                            .foregroundColor(addressText.isEmpty ? .secondary : .primary)
+                            .lineLimit(nil)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
+                        Map(initialPosition: .region(region(for: lat, lng))) {
+                            Annotation("", coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lng)) {
+                                Image(systemName: "mappin.circle.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.red)
+                                    .shadow(radius: 1)
+                            }
+                        }
+                        .frame(height: 200)
+                        .cornerRadius(12)
+
+                        
+                    } else {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.white)
+                            .frame(height: 140)
+                            .overlay(Text("No location available")
+                                .font(.custom("BalooBhaijaan2-Medium", size: 16))
+                                .foregroundColor(.secondary))
                     }
 
-                    // Map placeholder
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.white)
-                        .frame(height: 140)
-                        .overlay(
-                            Text("map")
-                                .foregroundColor(.secondary)
-                        )
-
-                    Spacer().frame(height: 104) // leave room for the two buttons
+                    Spacer().frame(height: 104)
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 24)
                 .padding(.top, 16)
             }
 
             // Bottom action buttons
-            VStack(spacing: 10) {
+            VStack(spacing: 8) {
                 Spacer()
 
-                // Edit
                 Button {
                     showEdit = true
-                    onEdit() // keep your external callback if you need analytics etc.
+                    onEdit()
                 } label: {
                     Text("Edit")
                         .font(.custom("BalooBhaijaan2-Bold", size: 16))
@@ -86,7 +113,6 @@ struct ReportDetailsView: View {
                         .cornerRadius(8)
                 }
 
-                // Delete
                 Button(role: .destructive) {
                     showDeleteConfirm = true
                 } label: {
@@ -101,10 +127,10 @@ struct ReportDetailsView: View {
                         )
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 24)
             .padding(.bottom, 16)
         }
-        .navigationTitle("report details")
+        .navigationTitle("Report Details")
         .navigationBarTitleDisplayMode(.inline)
         .alert("Delete report?", isPresented: $showDeleteConfirm) {
             Button("Delete", role: .destructive) { onDelete() }
@@ -112,31 +138,82 @@ struct ReportDetailsView: View {
         } message: {
             Text("This action cannot be undone.")
         }
-        // NAVIGATION goes on the root view, not on the Button
+        .alert("Save failed", isPresented: .constant(savingError != nil)) {
+            Button("OK") { savingError = nil }
+        } message: {
+            Text(savingError ?? "")
+        }
         .navigationDestination(isPresented: $showEdit) {
-            EditReportView(report: report) { description, name, phone, isLost in
-                // Handle save inside EditReportView via your shared VM.
-                // If you want to pop back after saving:
-                // (EditReportView can dismiss itself or call a closure.)
+            EditReportView(report: current) { _, _, _, _, _, _ in
                 showEdit = false
             }
+        }
+        .task {
+            if let lat = safeLat, let lng = safeLng {
+                await reverseGeocode(lat: lat, lng: lng)
+            }
+        }
+    }
+
+
+    private var safeLat: Double? {
+        let lat = current.lat
+        return lat.isNaN ? nil : lat
+    }
+    private var safeLng: Double? {
+        let lng = current.lng
+        return lng.isNaN ? nil : lng
+    }
+
+    private func region(for lat: Double, _ lng: Double) -> MKCoordinateRegion {
+        MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: lat, longitude: lng),
+            span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+        )
+    }
+
+    @MainActor
+    private func reverseGeocode(lat: Double, lng: Double) async {
+        isGeocoding = true
+        defer { isGeocoding = false }
+
+        let geocoder = CLGeocoder()
+        let location = CLLocation(latitude: lat, longitude: lng)
+
+        do {
+            let placemarks = try await geocoder.reverseGeocodeLocation(location)
+            if let pm = placemarks.first {
+                let parts = [pm.name, pm.thoroughfare, pm.subThoroughfare, pm.locality, pm.administrativeArea, pm.country]
+                self.addressText = parts.compactMap { $0 }
+                    .map { $0.trimmingCharacters(in: .whitespaces) }
+                    .filter { !$0.isEmpty }
+                    .joined(separator: ", ")
+            } else {
+                self.addressText = ""
+            }
+        } catch {
+            self.addressText = ""
         }
     }
 }
 
-private struct LabeledLine: View {
+private struct LabeledInline: View {
     let title: String
-    let text: String
+    let value: String
 
     var body: some View {
-        if !text.isEmpty {
-            VStack(alignment: .leading, spacing: 6) {
-                Text(title)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                Text(text)
-                    .font(.body)
-            }
+        if !value.isEmpty {
+            (Text(title + " ")
+                .font(.custom("BalooBhaijaan2-Bold", size: 16))
+             + Text(value)
+                .font(.custom("BalooBhaijaan2-Medium", size: 16)))
+            .foregroundColor(.primary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .lineLimit(nil)
         }
     }
+}
+
+extension Notification.Name {
+    static let reportsDidChange = Notification.Name("reportsDidChange")
 }

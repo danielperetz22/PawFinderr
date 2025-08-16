@@ -28,7 +28,7 @@ struct MyReportsView: View {
                         // ② wrap row in a NavigationLink to details
                         NavigationLink {
                             ReportDetailsView(report: rpt)
-                                .navigationTitle("report details")
+                                .navigationTitle("Report Details")
                                 .navigationBarTitleDisplayMode(.inline)
                         } label: {
                             ReportRow(report: rpt)
@@ -48,12 +48,13 @@ struct MyReportsView: View {
                             showNewReport = true
                         } label: {
                             Image(systemName: "plus")
-                                .font(.system(size: 22, weight: .bold))
+                                .font(.system(size: 20, weight: .bold))
                                 .foregroundColor(.white)
-                                .padding(18)
-                                .background(Color("SecondaryPink"))
-                                .clipShape(Circle())
-                                .shadow(radius: 4)
+                                .frame(width: 44, height: 44)
+                                .background(Color.darkGreen)
+                                .cornerRadius(8)
+                                .shadow(color: Color.black.opacity(0.2),
+                                        radius: 4, x: 0, y: 2)
                         }
                         .padding(.trailing, 16)
                         .padding(.bottom, 24)
