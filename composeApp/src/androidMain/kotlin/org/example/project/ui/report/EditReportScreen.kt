@@ -2,7 +2,8 @@ package org.example.project.ui.report
 
 import android.location.Geocoder
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -74,7 +75,12 @@ fun EditReportScreen(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
                 Button(
                     onClick = { isLost = true },
                     modifier = Modifier
@@ -82,10 +88,17 @@ fun EditReportScreen(
                         .height(44.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isLost) LostColor else PrimaryPink.copy(alpha = 0.5f),
+                        containerColor = if (isLost) LostColor else PrimaryPink,
                         contentColor   = Color.White
                     )
-                ) { Text("Lost", fontWeight = FontWeight.Bold) }
+                ) {
+                    Text(
+                        "Lost",
+                        fontFamily = balooBhaijaan2Family,
+                        fontWeight = FontWeight.Bold,
+                        fontSize   = 16.sp
+                    )
+                }
 
                 Button(
                     onClick = { isLost = false },
@@ -94,11 +107,19 @@ fun EditReportScreen(
                         .height(44.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (!isLost) MaterialTheme.colorScheme.primary else PrimaryPink,
+                        containerColor = if (!isLost) LostColor else PrimaryPink,
                         contentColor   = Color.White
                     )
-                ) { Text("Found", fontWeight = FontWeight.Bold) }
+                ) {
+                    Text(
+                        "Found",
+                        fontFamily = balooBhaijaan2Family,
+                        fontWeight = FontWeight.Bold,
+                        fontSize   = 16.sp
+                    )
+                }
             }
+
 
             AsyncImage(
                 model = report.imageUrl,
@@ -111,11 +132,9 @@ fun EditReportScreen(
             )
 
             LabeledEditor("description :", description) { description = it }
-            LabeledEditor("contact me :",  phone)       { phone = it }
-            LabeledEditor("name :",        name)        { name = it }
+            LabeledEditor("contact me :",phone){ phone = it }
+            LabeledEditor("name :",name){ name = it }
 
-            // Location (current value shown; user can change via dialog)
-            Text("location", color = LabelGray, style = MaterialTheme.typography.bodyMedium)
             LocationEditor(
                 lat = draftLat,
                 lng = draftLng,
@@ -180,20 +199,22 @@ private fun LabeledEditor(
     value: String,
     onValueChange: (String) -> Unit,
 ) {
-    Column {
-        Text(label, color = LabelGray, style = MaterialTheme.typography.bodyMedium)
-        Spacer(Modifier.height(6.dp))
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 52.dp),
-            textStyle = MaterialTheme.typography.titleMedium,
-            singleLine = false,
-            shape = RoundedCornerShape(12.dp)
-        )
-    }
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp),
+        label = {
+            Text(
+                // drop trailing " :" if present
+                text = label.removeSuffix(" :"),
+                color = LabelGray,
+            )
+        },
+        singleLine = false,
+        shape = RoundedCornerShape(8.dp),
+    )
 }
 
 @Composable
@@ -226,9 +247,9 @@ private fun LocationEditor(
     ) {
         Text(
             text = when {
-                address != null -> address!!
-                spot != null    -> String.format(Locale.getDefault(), "%.5f, %.5f", lat, lng)
-                else            -> "No location selected"
+                address != null-> address!!
+                spot != null-> String.format(Locale.getDefault(), "%.5f, %.5f", lat, lng)
+                else-> "No location selected"
             },
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.weight(1f)
@@ -236,18 +257,20 @@ private fun LocationEditor(
         Spacer(Modifier.width(12.dp))
         OutlinedButton(
             onClick = onChangeClick,
-            shape = RoundedCornerShape(10.dp)
+            shape  = RoundedCornerShape(10.dp),
+            border = BorderStroke(1.dp, Color.White),
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = Color.White.copy(alpha = 0.3f),
+                contentColor   = PrimaryPink
+            )
         ) {
-            Text(if (spot == null) "Pick location" else "Change location")
+            Text(
+                if (lat == null || lng == null) "Pick location" else "Change location",
+                fontFamily = balooBhaijaan2Family,
+                fontWeight = FontWeight.Bold,
+                fontSize   = 14.sp
+            )
         }
-    }
 
-    // (Optional) if you want a thin divider card below:
-    Spacer(Modifier.height(8.dp))
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(1.dp)
-            .background(CardStroke)
-    )
+    }
 }
