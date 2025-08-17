@@ -1,3 +1,4 @@
+// MyReportsScreen.kt
 package org.example.project.ui.report
 
 import androidx.compose.foundation.background
@@ -23,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import org.example.project.R
 import org.example.project.data.report.ReportModel
+import org.example.project.ui.components.LoadingAnimation
 
 private val balooBhaijaan2Family = FontFamily(
     Font(R.font.baloobhaijaan2_regular,   FontWeight.Normal),
@@ -36,9 +38,11 @@ private val balooBhaijaan2Family = FontFamily(
 fun MyReportsScreen(
     reports: List<ReportModel>,
     onPublishClicked: () -> Unit,
-    onItemClick: (ReportModel) -> Unit = {}
+    onItemClick: (ReportModel) -> Unit = {},
+    isLoading: Boolean = false
 ) {
     val sortedReports = reports.sortedByDescending { it.id }
+
 
     Box(
         Modifier
@@ -56,6 +60,7 @@ fun MyReportsScreen(
             ) {
                 items(sortedReports, key = { it.id }) { rpt ->
                     ReportItem(rpt = rpt, onClick = { onItemClick(rpt) })
+
                 }
             }
         }
@@ -172,6 +177,7 @@ private fun ReportItem(
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
+
                     }
                 }
             }
