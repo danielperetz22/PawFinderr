@@ -147,10 +147,10 @@ struct NewReportView: View {
                 } label: {
                     Text("📍  Add location")
                         .foregroundColor(Color("PrimaryPink"))
-                        .frame(maxWidth: .infinity, minHeight: 48)
+                        .frame(maxWidth: .infinity, maxHeight: 48)
                         .padding()
                         .font(.custom("BalooBhaijaan2-Bold", size: 16))
-                        .background(Color.white.opacity(0.8))
+                        .background(Color.white.opacity(0.7))
                         .cornerRadius(8)
                 }
                 .sheet(isPresented: $showLocationPicker) {

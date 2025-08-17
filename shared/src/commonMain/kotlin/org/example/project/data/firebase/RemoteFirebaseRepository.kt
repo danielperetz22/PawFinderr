@@ -145,7 +145,7 @@ class RemoteFirebaseRepository : FirebaseRepository {
                     location    = raw["location"]?.toString(),
                     createdAt   = (raw["createdAt"] as? Number)?.toLong() ?: 0L,
                     lat         = anyToDouble(raw["lat"]),
-                    lng         = anyToDouble(raw["lat"])
+                    lng         = anyToDouble(raw["lng"])
                 )
             }
         }
@@ -171,7 +171,7 @@ class RemoteFirebaseRepository : FirebaseRepository {
         isLost?.let      { data["isLost"]      = it }
         location?.let    { data["location"]    = it }
         lat?.let {data["lat"] = it}
-        lng?.let {data["kng"] = it}
+        lng?.let {data["lng"] = it}
 
 
       if (data.isEmpty()) return // nothing to update

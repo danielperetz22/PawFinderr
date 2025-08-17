@@ -144,7 +144,25 @@ struct ReportDetailsView: View {
             Text(savingError ?? "")
         }
         .navigationDestination(isPresented: $showEdit) {
-            EditReportView(report: current) { _, _, _, _, _, _ in
+            EditReportView(report: current) { desc, name, phone, isLost, latOpt, lngOpt, imageUrl in
+                let newLat = latOpt ?? current.lat
+                let newLng = lngOpt ?? current.lng
+
+                current = ReportModel(
+                    id:         current.id,
+                    userId:     current.userId,
+                    description: desc,                   // correct label
+                    name:       name,
+                    phone:      phone,
+                    imageUrl:   imageUrl ?? current.imageUrl,
+                    isLost:     isLost,
+                    location:   current.location,        // keep your existing string address if any
+                    lat:        newLat,
+                    lng:        newLng,
+                    createdAt:  current.createdAt
+                )
+
+                Task { await reverseGeocode(lat: newLat, lng: newLng) }
                 showEdit = false
             }
         }

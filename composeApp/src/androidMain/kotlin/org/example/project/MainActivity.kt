@@ -306,7 +306,7 @@ class MainActivity : ComponentActivity() {
 
                             EditReportScreen(
                                 report = report,
-                                onSave = { description, name, phone, isLost, lat, lng ->
+                                onSave = { description, name, phone, isLost, lat, lng, imageUrl  ->
                                     reportVm.updateReport(
                                         reportId = report.id,
                                         description = description,
@@ -314,7 +314,8 @@ class MainActivity : ComponentActivity() {
                                         phone = phone,
                                         isLost = isLost,
                                         lat = lat,
-                                        lng = lng
+                                        lng = lng,
+                                        imageUrl = imageUrl
                                     )
                                 }
                             )
