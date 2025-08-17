@@ -4,6 +4,7 @@ import Shared
 struct MyReportsView: View {
     @State private var reports: [ReportModel] = []
     @State private var isLoading = false
+    @State private var isRefreshing = false
     @State private var errorText: String?
     @State private var showNewReport = false
 
@@ -11,21 +12,44 @@ struct MyReportsView: View {
     private let auth = RemoteFirebaseRepository()
 
     var body: some View {
-        NavigationStack { // ① add navigation container
+        NavigationStack {
             ZStack {
                 Color("BackgroundGray").ignoresSafeArea()
 
-                if isLoading {
-                    ProgressView().scaleEffect(1.2)
+                if isLoading && reports.isEmpty {
+                    VStack(spacing: 10) {
+                        ProgressView().scaleEffect(1.2)
+                        Text(isRefreshing ? "Refreshing..." : "Loading reports...")
+                            .font(.custom("BalooBhaijaan2-Regular", size: 14))
+                            .foregroundColor(.secondary)
+                    }
                 } else if let err = errorText {
-                    Text(err).foregroundColor(.red)
+                    ScrollView {
+                        VStack(spacing: 12) {
+                            Text(err)
+                                .foregroundColor(.red)
+                                .font(.custom("BalooBhaijaan2-Bold", size: 16))
+                            Button("Try again") { loadReports() }
+                                .buttonStyle(.borderedProminent)
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 300)
+                    }
+                    .refreshable { await loadReportsAsync() }
                 } else if reports.isEmpty {
-                    Text("No reports yet")
-                        .font(.custom("BalooBhaijaan2-Bold", size: 24))
-                        .foregroundColor(.gray)
+                    ScrollView {
+                        VStack(spacing: 8) {
+                            Text("No reports yet")
+                                .font(.custom("BalooBhaijaan2-Bold", size: 24))
+                                .foregroundColor(.gray)
+                            Text("Pull to refresh")
+                                .font(.custom("BalooBhaijaan2-Regular", size: 14))
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 300)
+                    }
+                    .refreshable { await loadReportsAsync() }
                 } else {
                     List(reports, id: \.id) { rpt in
-                        // ② wrap row in a NavigationLink to details
                         NavigationLink {
                             ReportDetailsView(report: rpt)
                                 .navigationTitle("Report Details")
@@ -38,6 +62,7 @@ struct MyReportsView: View {
                     }
                     .listStyle(.plain)
                     .padding(.bottom, 12)
+                    .refreshable { await loadReportsAsync() }
                 }
 
                 // Floating + button
@@ -85,7 +110,31 @@ struct MyReportsView: View {
                 self.errorText = err.localizedDescription
                 return
             }
-            self.reports = list ?? []
+            self.reports = (list ?? []).sorted(by: { $0.id > $1.id })
+        }
+    }
+
+    private func loadReportsAsync() async {
+        guard let uid = auth.currentUserUid() else {
+            await MainActor.run { self.errorText = "Please sign in first." }
+            return
+        }
+        await MainActor.run {
+            errorText = nil
+            isRefreshing = true
+        }
+        await withCheckedContinuation { (cont: CheckedContinuation<Void, Never>) in
+            repo.getReportsForUser(userId: uid) { list, err in
+                Task { @MainActor in
+                    if let err = err {
+                        self.errorText = err.localizedDescription
+                    } else {
+                        self.reports = (list ?? []).sorted(by: { $0.id > $1.id })
+                    }
+                    self.isRefreshing = false
+                    cont.resume()
+                }
+            }
         }
     }
 }
@@ -95,12 +144,43 @@ struct ReportRow: View {
 
     var body: some View {
         HStack(spacing: 14) {
-            if !report.imageUrl.isEmpty, let url = URL(string: report.imageUrl) {
-                AsyncImage(url: url) { img in img.resizable() } placeholder: {
-                    Color.gray.opacity(0.2)
+            if let url = URL(string: report.imageUrl), !report.imageUrl.isEmpty {
+                AsyncImage(url: url) { phase in
+                    ZStack(alignment: .top) {
+                        switch phase {
+                        case .empty:
+                            Color.gray.opacity(0.2)
+                                .overlay(
+                                    ProgressView()
+                                        .progressViewStyle(.linear)
+                                        .tint(Color("PrimaryPink"))
+                                        .frame(height: 3),
+                                    alignment: .top
+                                )
+
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+
+                        case .failure:
+                            Color.gray.opacity(0.25)
+                                .overlay(
+                                    Image(systemName: "photo")
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .foregroundColor(.secondary)
+                                )
+                        @unknown default:
+                            Color.gray.opacity(0.2)
+                        }
+                    }
                 }
                 .frame(width: 88, height: 88)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
+            } else {
+                Color.gray.opacity(0.2)
+                    .frame(width: 88, height: 88)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
             }
 
             VStack(alignment: .leading, spacing: 6) {
@@ -142,3 +222,4 @@ struct ReportRow: View {
         .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 3)
     }
 }
+
