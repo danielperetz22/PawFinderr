@@ -152,10 +152,6 @@ struct ReportRow: View {
                             Color.gray.opacity(0.2)
                                 .overlay(
                                     ProgressView()
-                                        .progressViewStyle(.linear)
-                                        .tint(Color("PrimaryPink"))
-                                        .frame(height: 3),
-                                    alignment: .top
                                 )
 
                         case .success(let image):
