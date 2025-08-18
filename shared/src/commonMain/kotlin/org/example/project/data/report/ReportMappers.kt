@@ -8,7 +8,6 @@ fun Reports.toModel() = ReportModel(
     phone = phone,
     imageUrl = imageUrl,
     isLost = isLost,
-    location = location,
     lat = lat,
     lng = lng,
     createdAt = createdAt

@@ -217,7 +217,6 @@ struct EditReportView: View {
                             phone:       phoneText,
                             imageUrl:    finalUrl,
                             isLost:      isLostArg,
-                            location:    nil,
                             lat:         latArg,
                             lng:         lngArg
                         ) { error in

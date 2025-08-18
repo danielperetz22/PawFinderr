@@ -56,30 +56,53 @@ private val LostColor   = Color(0xFFF69092)
 private val PrimaryPink = Color(0xFFFEB0B2)
 private val LabelGray   = Color(0xFF8D8D8D)
 
+
+
+
 @Composable
 fun EditReportScreen(
     report: ReportModel,
-    onSave: (description: String, name: String, phone: String, isLost: Boolean, lat: Double, lng: Double, imageUrl: String?) -> Unit
+    onSave: (
+        description: String,
+        name: String,
+        phone: String,
+        isLost: Boolean,
+        lat: Double?,
+        lng: Double?,
+        imageUrl: String?
+    ) -> Unit
 ) {
-
+    // --- image state ---
     var localImageUri by remember { mutableStateOf<Uri?>(null) }
+    var isSaving by remember { mutableStateOf(false) }
+    var showImageSourceDialog by remember { mutableStateOf(false) }
+    var cameraUri by remember { mutableStateOf<Uri?>(null) }
 
-    val picker = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri -> if (uri != null) localImageUri = uri }
-    val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
+    // launchers
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri -> if (uri != null) localImageUri = uri }
 
-    // Text fields
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && cameraUri != null) {
+            localImageUri = cameraUri
+        }
+    }
+
+    // --- text/flags ---
     var description by remember { mutableStateOf(report.description) }
     var name by remember { mutableStateOf(report.name) }
     var phone by remember { mutableStateOf(report.phone) }
     var isLost by remember { mutableStateOf(report.isLost) }
 
-    // Location (pre-filled from report; stays as-is unless user changes it)
-    var draftLat by remember { mutableStateOf(report.lat) }
-    var draftLng by remember { mutableStateOf(report.lng) }
+    // --- location ---
+    var draftLat by remember { mutableStateOf(report.lat) }   // Double?
+    var draftLng by remember { mutableStateOf(report.lng) }   // Double?
     var showPicker by remember { mutableStateOf(false) }
     var locationErr by remember { mutableStateOf<String?>(null) }
 
@@ -91,6 +114,7 @@ fun EditReportScreen(
             .background(BgGray)
             .padding(horizontal = 24.dp, vertical = 16.dp),
     ) {
+        // ===== Scrollable content =====
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -99,51 +123,31 @@ fun EditReportScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Button(
                     onClick = { isLost = true },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(44.dp),
+                    modifier = Modifier.weight(1f).height(44.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (isLost) LostColor else PrimaryPink,
                         contentColor = Color.White
                     )
-                ) {
-                    Text(
-                        "Lost",
-                        fontFamily = balooBhaijaan2Family,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
-                }
+                ) { Text("Lost", fontFamily = balooBhaijaan2Family, fontWeight = FontWeight.Bold, fontSize = 16.sp) }
 
                 Button(
                     onClick = { isLost = false },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(44.dp),
+                    modifier = Modifier.weight(1f).height(44.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (!isLost) LostColor else PrimaryPink,
                         contentColor = Color.White
                     )
-                ) {
-                    Text(
-                        "Found",
-                        fontFamily = balooBhaijaan2Family,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
-                }
+                ) { Text("Found", fontFamily = balooBhaijaan2Family, fontWeight = FontWeight.Bold, fontSize = 16.sp) }
             }
 
-
+            // --- image with pencil that opens dialog ---
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -158,14 +162,8 @@ fun EditReportScreen(
                 )
 
                 SmallFloatingActionButton(
-                    onClick = {
-                        picker.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                        )
-                    },
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(12.dp),
+                    onClick = { showImageSourceDialog = true },
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(12.dp),
                     containerColor = Color(0xFF90D1D8),
                     contentColor = Color.White
                 ) {
@@ -175,9 +173,7 @@ fun EditReportScreen(
                 if (localImageUri != null) {
                     SmallFloatingActionButton(
                         onClick = { localImageUri = null },
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(12.dp),
+                        modifier = Modifier.align(Alignment.BottomStart).padding(12.dp),
                         containerColor = Color(0xFF90D1D8),
                         contentColor = Color.White
                     ) {
@@ -185,7 +181,6 @@ fun EditReportScreen(
                     }
                 }
             }
-
 
             LabeledEditor("description :", description) { description = it }
             LabeledEditor("contact me :", phone) { phone = it }
@@ -204,37 +199,35 @@ fun EditReportScreen(
                 Text(it, color = MaterialTheme.colorScheme.error, fontSize = 14.sp)
             }
 
-            Spacer(Modifier.height(96.dp))
+            // space so sticky save doesn't cover content
+            Spacer(Modifier.height(100.dp))
         }
 
-        // Save button is INSIDE the Box so .align works
+        // ===== sticky bottom Save button =====
         Button(
+            enabled = !isSaving,
             onClick = {
                 val lat = draftLat
                 val lng = draftLng
-                if (lat == null || lng == null) {
-                    locationErr = "Please pick a location before saving."
-                    return@Button
-                }
-                var finalUrl: String? = null
-                if (localImageUri != null) {
-                    // use a scope tied to composition rather than creating a new one
-                    scope.launch {
-                        try {
-                            finalUrl = uploadToCloudinary(context, localImageUri!!)
-                            onSave(description, name, phone, isLost, lat, lng, finalUrl)
-                        } catch (_: Throwable) {
-                            onSave(description, name, phone, isLost, lat, lng, report.imageUrl)
-                        }
+
+                scope.launch {
+                    isSaving = true
+                    try {
+                        val finalUrl = localImageUri?.let { uploadToCloudinary(context, it) }
+                        onSave(description, name, phone, isLost, lat!!, lng!!, finalUrl)
+                    } catch (_: Throwable) {
+                        // Keep existing image if upload failed
+                        onSave(description, name, phone, isLost, lat!!, lng!!, null)
+                    } finally {
+                        isSaving = false
                     }
-                } else {
-                    onSave(description, name, phone, isLost, lat, lng, null)
                 }
             },
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
+                .align(Alignment.BottomCenter)
                 .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 16.dp)
+                .windowInsetsPadding(WindowInsets.navigationBars.union(WindowInsets.ime))
                 .height(52.dp),
             shape = RoundedCornerShape(14.dp),
             colors = ButtonDefaults.buttonColors(
@@ -243,12 +236,12 @@ fun EditReportScreen(
             )
         ) {
             Text(
-                "Save changes",
+                if (isSaving) "Saving…" else "Save changes",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
             )
         }
 
-        // Open your existing MapPickerDialog when the user taps "Change location"
+        // Map picker sheet/dialog
         if (showPicker) {
             MapPickerDialog(
                 onDismiss = { showPicker = false },
@@ -259,9 +252,42 @@ fun EditReportScreen(
                 }
             )
         }
+
+        // Image source dialog (Camera / Gallery)
+        if (showImageSourceDialog) {
+            AlertDialog(
+                onDismissRequest = { showImageSourceDialog = false },
+                title = { Text("Select an image source") },
+                text  = { Text("New photo or selection from the gallery?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        galleryLauncher.launch("image/*")
+                        showImageSourceDialog = false
+                    }) { Text("Gallery") }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        cameraUri = createImageUri(context)
+                        cameraLauncher.launch(cameraUri!!)
+                        showImageSourceDialog = false
+                    }) { Text("Camera") }
+                }
+            )
+        }
     }
 }
 
+// Helper for camera Uri
+private fun createImageUri(context: Context): Uri {
+    val cv = android.content.ContentValues().apply {
+        put(android.provider.MediaStore.Images.Media.DISPLAY_NAME, "report_${System.currentTimeMillis()}.jpg")
+        put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+    }
+    return context.contentResolver.insert(
+        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+        cv
+    )!!
+}
 
 suspend fun uploadToCloudinary(ctx: Context, uri: Uri): String =
     withContext(Dispatchers.IO) {

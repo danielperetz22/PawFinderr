@@ -42,7 +42,6 @@ class LocalReportDataSource(
             phone = model.phone,
             imageUrl = model.imageUrl,
             isLost = model.isLost,
-            location = model.location,
             lat = model.lat,
             lng = model.lng,
             createdAt = model.createdAt

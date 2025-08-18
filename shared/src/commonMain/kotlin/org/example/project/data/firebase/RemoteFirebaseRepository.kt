@@ -57,7 +57,6 @@ class RemoteFirebaseRepository : FirebaseRepository {
         phone: String,
         imageUrl: String,
         isLost: Boolean,
-        location: String?,
         lat: Double,
         lng: Double
     ) {
@@ -77,7 +76,6 @@ class RemoteFirebaseRepository : FirebaseRepository {
                     "phone"       to phone,
                     "imageUrl"    to imageUrl,
                     "isLost"      to isLost,
-                    "location"    to location,
                     "lat"         to lat,
                     "lng"         to lng,
                 )
@@ -107,7 +105,6 @@ class RemoteFirebaseRepository : FirebaseRepository {
                     phone       = raw["phone"]?.toString().orEmpty(),
                     imageUrl    = raw["imageUrl"]?.toString().orEmpty(),
                     isLost      = (raw["isLost"] as? Boolean) ?: false,
-                    location    = raw["location"]?.toString(),
                     createdAt   = (raw["createdAt"] as? Number)?.toLong() ?: 0L
                 )
             }
@@ -142,7 +139,6 @@ class RemoteFirebaseRepository : FirebaseRepository {
                     phone       = raw["phone"]?.toString().orEmpty(),
                     imageUrl    = raw["imageUrl"]?.toString().orEmpty(),
                     isLost      = (raw["isLost"] as? Boolean) ?: false,
-                    location    = raw["location"]?.toString(),
                     createdAt   = (raw["createdAt"] as? Number)?.toLong() ?: 0L,
                     lat         = anyToDouble(raw["lat"]),
                     lng         = anyToDouble(raw["lng"])
@@ -151,6 +147,7 @@ class RemoteFirebaseRepository : FirebaseRepository {
         }
         return results.sortedByDescending { it.createdAt }
     }
+  @Suppress("SuspiciousIndentation")
   override suspend fun updateReport(
         reportId: String,
         description: String?,
@@ -158,7 +155,6 @@ class RemoteFirebaseRepository : FirebaseRepository {
         phone: String?,
         imageUrl: String?,
         isLost: Boolean?,
-        location: String?,
         lat: Double?,
         lng: Double?
     ) {
@@ -169,7 +165,6 @@ class RemoteFirebaseRepository : FirebaseRepository {
         phone?.let       { data["phone"]       = it }
         imageUrl?.let    { data["imageUrl"]    = it }
         isLost?.let      { data["isLost"]      = it }
-        location?.let    { data["location"]    = it }
         lat?.let {data["lat"] = it}
         lng?.let {data["lng"] = it}
 

@@ -156,7 +156,6 @@ struct ReportDetailsView: View {
                     phone:      phone,
                     imageUrl:   imageUrl ?? current.imageUrl,
                     isLost:     isLost,
-                    location:   current.location,        // keep your existing string address if any
                     lat:        newLat,
                     lng:        newLng,
                     createdAt:  current.createdAt
