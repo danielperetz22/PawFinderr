@@ -222,22 +222,6 @@ fun ReportDetailsScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Button(
-                onClick = onEdit,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = PrimaryPink,
-                    contentColor = Color.White
-                )
-            ) {
-                Text(
-                    "Edit",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                )
-            }
             // --- BOTTOM ACTION BUTTONS (scroll with page) ---
             if (currentUserId != null && report.userId == currentUserId) {
                 Spacer(Modifier.height(24.dp))
