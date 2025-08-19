@@ -2,7 +2,7 @@ package org.example.project.ui.home
 
 import androidx.lifecycle.ViewModel
 import org.example.project.data.firebase.RemoteFirebaseRepository
-import org.example.project.user.UserViewModel as SharedUserViewModel
+import org.example.project.data.user.UserViewModel as SharedUserViewModel
 
 class AndroidUserViewModel : ViewModel() {
     private val shared = SharedUserViewModel(RemoteFirebaseRepository())

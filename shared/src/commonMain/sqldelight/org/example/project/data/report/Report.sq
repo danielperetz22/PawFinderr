@@ -10,7 +10,6 @@ CREATE TABLE reports (
   phone      TEXT    NOT NULL,
   imageUrl   TEXT    NOT NULL,
   isLost     INTEGER AS Boolean NOT NULL,
-  location   TEXT,             -- nullable
   lat        REAL    NOT NULL, -- Double; you can store Double.NaN if unknown
   lng        REAL    NOT NULL, -- Double; you can store Double.NaN if unknown
   createdAt  INTEGER NOT NULL  -- Long epoch millis
@@ -39,16 +38,16 @@ WHERE id = ?;
 
 insertReport:
 INSERT INTO reports(
-  id, userId, description, name, phone, imageUrl, isLost, location, lat, lng, createdAt
+  id, userId, description, name, phone, imageUrl, isLost, lat, lng, createdAt
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 -- Upsert without ON CONFLICT: works with PRIMARY KEY(id)
 upsertReport:
 INSERT OR REPLACE INTO reports(
-  id, userId, description, name, phone, imageUrl, isLost, location, lat, lng, createdAt
+  id, userId, description, name, phone, imageUrl, isLost, lat, lng, createdAt
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 deleteReport:
 DELETE FROM reports WHERE id = ?;

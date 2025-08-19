@@ -2,12 +2,10 @@ package org.example.project.user
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 import org.example.project.data.firebase.FirebaseRepository
 import org.example.project.data.firebase.RemoteFirebaseRepository
+import org.example.project.data.user.UserViewModel
 
 class AndroidUserViewModel(
     repo: FirebaseRepository = RemoteFirebaseRepository()

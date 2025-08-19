@@ -14,11 +14,10 @@ class ReportRepositoryImpl(
         phone: String,
         imageUrl: String,
         isLost: Boolean,
-        location: String?,
         lat: Double,
         lng: Double
     ) {
-        firebase.saveReport(description, name, phone, imageUrl, isLost, location, lat, lng)
+        firebase.saveReport(description, name, phone, imageUrl, isLost, lat, lng)
     }
 
     override suspend fun getReportsForUser(userId: String): List<ReportModel> =
@@ -35,10 +34,9 @@ class ReportRepositoryImpl(
         phone: String?,
         imageUrl: String?,
         isLost: Boolean?,
-        location: String?,
         lat: Double?,
         lng: Double?
-    ) = firebase.updateReport(reportId, description, name, phone, imageUrl, isLost, location, lat, lng)
+    ) = firebase.updateReport(reportId, description, name, phone, imageUrl, isLost, lat, lng)
 
     override suspend fun deleteReport(reportId: String) =
         firebase.deleteReport(reportId)

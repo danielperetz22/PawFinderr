@@ -12,12 +12,10 @@ import org.example.project.data.report.ReportModel
 class RemoteFirebaseRepository : FirebaseRepository {
 
     override suspend fun signUp(email: String, password: String) {
-        // יוצר חשבון חדש ב‑Firebase Auth
         Firebase.auth.createUserWithEmailAndPassword(email, password)
     }
 
     override suspend fun signIn(email: String, password: String) {
-        // מתחבר חשבון קיים
         Firebase.auth.signInWithEmailAndPassword(email, password)
     }
 
@@ -25,7 +23,6 @@ class RemoteFirebaseRepository : FirebaseRepository {
         Firebase.auth.currentUser?.uid
 
     override suspend fun saveUserProfile(uid: String, email: String) {
-        // שומר מסמך משתמש ב‑Firestore תחת collection “users”
         Firebase.firestore
             .collection("users")
             .document(uid)
@@ -57,16 +54,13 @@ class RemoteFirebaseRepository : FirebaseRepository {
         phone: String,
         imageUrl: String,
         isLost: Boolean,
-        location: String?,
         lat: Double,
         lng: Double
     ) {
-        // ① get the current user’s UID
         val userId = Firebase.auth.currentUser
             ?.uid
             ?: throw IllegalStateException("No authenticated user!")
 
-        // ② write a document that includes userId
         Firebase.firestore
             .collection("reports")
             .add(
@@ -77,19 +71,16 @@ class RemoteFirebaseRepository : FirebaseRepository {
                     "phone"       to phone,
                     "imageUrl"    to imageUrl,
                     "isLost"      to isLost,
-                    "location"    to location,
                     "lat"         to lat,
                     "lng"         to lng,
                 )
             )
     }
 
-    // shared RemoteFirebaseRepository
     override suspend fun getReportsForUser(userId: String): List<ReportModel> {
         val snapshot = Firebase.firestore
             .collection("reports")
             .where { "userId" equalTo userId }
-            // .orderBy("createdAt", Direction.DESCENDING)   // TEMPORARILY DISABLE
             .get()
 
         val results = mutableListOf<ReportModel>()
@@ -107,13 +98,11 @@ class RemoteFirebaseRepository : FirebaseRepository {
                     phone       = raw["phone"]?.toString().orEmpty(),
                     imageUrl    = raw["imageUrl"]?.toString().orEmpty(),
                     isLost      = (raw["isLost"] as? Boolean) ?: false,
-                    location    = raw["location"]?.toString(),
                     createdAt   = (raw["createdAt"] as? Number)?.toLong() ?: 0L
                 )
             }
         }
 
-        // newest first on client
         return results.sortedByDescending { it.createdAt }
     }
     override suspend fun getAllReports(): List<ReportModel> {
@@ -142,7 +131,6 @@ class RemoteFirebaseRepository : FirebaseRepository {
                     phone       = raw["phone"]?.toString().orEmpty(),
                     imageUrl    = raw["imageUrl"]?.toString().orEmpty(),
                     isLost      = (raw["isLost"] as? Boolean) ?: false,
-                    location    = raw["location"]?.toString(),
                     createdAt   = (raw["createdAt"] as? Number)?.toLong() ?: 0L,
                     lat         = anyToDouble(raw["lat"]),
                     lng         = anyToDouble(raw["lng"])
@@ -151,6 +139,7 @@ class RemoteFirebaseRepository : FirebaseRepository {
         }
         return results.sortedByDescending { it.createdAt }
     }
+  @Suppress("SuspiciousIndentation")
   override suspend fun updateReport(
         reportId: String,
         description: String?,
@@ -158,23 +147,20 @@ class RemoteFirebaseRepository : FirebaseRepository {
         phone: String?,
         imageUrl: String?,
         isLost: Boolean?,
-        location: String?,
         lat: Double?,
         lng: Double?
     ) {
-        // build a partial update map (only fields you pass != null will be updated)
         val data = mutableMapOf<String, Any>()
         description?.let { data["description"] = it }
         name?.let        { data["name"]        = it }
         phone?.let       { data["phone"]       = it }
         imageUrl?.let    { data["imageUrl"]    = it }
         isLost?.let      { data["isLost"]      = it }
-        location?.let    { data["location"]    = it }
         lat?.let {data["lat"] = it}
         lng?.let {data["lng"] = it}
 
 
-      if (data.isEmpty()) return // nothing to update
+      if (data.isEmpty()) return
 
         Firebase.firestore
             .collection("reports")
