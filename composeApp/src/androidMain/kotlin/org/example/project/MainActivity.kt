@@ -38,7 +38,6 @@ import org.example.project.ui.report.MyReportsScreen
 import org.example.project.ui.report.ReportDetailsScreen
 import java.net.URLDecoder
 
-
 @Suppress("NAME_SHADOWING")
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,25 +46,30 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MaterialTheme {
+                fun baseRoute(route: String?): String =
+                    route?.substringBefore("/{")?.substringBefore("?") ?: ""
+
                 val vm: AndroidUserViewModel = viewModel()
                 val currentUid by vm.currentUid.collectAsState()
                 val startDestination = if (currentUid != null) "feed" else "home"
 
                 val barRoutes = setOf("feed", "profile", "reports")
-                fun shouldShowBars(route: String?): Boolean =
-                    route in barRoutes ||
-                            route?.startsWith("new-report") == true ||
-                            route?.startsWith("report-details") == true ||
-                            route?.startsWith("edit-report") == true
 
-                fun titleFor(route: String?): String = when {
-                    route == "feed"                 -> "Feed"
-                    route == "profile"              -> "Profile"
-                    route == "reports"              -> "My Reports"
-                    route?.startsWith("new-report") == true -> "New Report"
-                    route?.startsWith("report-details") == true -> "Report Details"
-                    route?.startsWith("edit-report") == true -> "Edit Report"
+                fun shouldShowBottomBar(route: String?) = baseRoute(route) in barRoutes
+                fun shouldShowTopBar(route: String?) = baseRoute(route) !in setOf("home", "login", "register")
+//                fun shouldShowBars(route: String?): Boolean =
+//                    route in barRoutes ||
+//                            route?.startsWith("new-report") == true ||
+//                            route?.startsWith("report-details") == true ||
+//                            route?.startsWith("edit-report") == true
 
+                fun titleFor(route: String?): String = when(baseRoute(route)) {
+                    "feed"           -> "Feed"
+                    "profile"        -> "Profile"
+                    "reports"        -> "My Reports"
+                    "new-report"     -> "New Report"
+                    "report-details" -> "Report Details"
+                    "edit-report"    -> "Edit Report"
                     else -> route.orEmpty()
                         .replaceFirstChar { it.uppercaseChar() }
                         .replace('-', ' ')
@@ -78,13 +82,14 @@ class MainActivity : ComponentActivity() {
                     topBar = {
                         val backStackEntry by navController.currentBackStackEntryAsState()
                         val currentRoute = backStackEntry?.destination?.route
-                        val titleText = currentRoute
-                            ?.replaceFirstChar { it.uppercaseChar() }
-                            ?: ""
-                        if (shouldShowBars(currentRoute)) {
+
+                        if (shouldShowTopBar(currentRoute)) {
+                            val showBack = !shouldShowBottomBar(currentRoute) &&
+                                    navController.previousBackStackEntry != null
 
                             AppTopBar(
                                 title = titleFor(currentRoute),
+                                showBack = showBack,
                                 onBackClick = { navController.popBackStack() }
                             )
                         }
@@ -92,7 +97,7 @@ class MainActivity : ComponentActivity() {
                     bottomBar = {
                         val backStackEntry by navController.currentBackStackEntryAsState()
                         val route = backStackEntry?.destination?.route
-                        if (shouldShowBars(route)) {
+                        if (shouldShowBottomBar(route)) {
                             BottomBar(navController)
                         }
                     }

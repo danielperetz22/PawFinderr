@@ -29,7 +29,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
+import coil3.compose.SubcomposeAsyncImageContent
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
@@ -53,7 +54,7 @@ private val balooBhaijaan2Family = FontFamily(
     Font(R.font.baloobhaijaan2_extrabold, FontWeight.ExtraBold)
 )
 
-private val BgGray      = Color(0xFFF3F3F3)
+private val BgGray      = Color(0xFFF0F0F0)
 private val LostColor   = Color(0xFF90D1D8)
 private val PrimaryPink = Color(0xFFFFC0C0)
 private val LabelGray   = Color(0xFF8D8D8D)
@@ -83,15 +84,43 @@ fun ReportDetailsScreen(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            AsyncImage(
-                model = report.imageUrl,
-                contentDescription = null,
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(220.dp)
-                    .clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
-            )
+                    .clip(RoundedCornerShape(8.dp))
+            ) {
+                SubcomposeAsyncImage(
+                    model = report.imageUrl,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    loading = {
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .background(Color.LightGray.copy(alpha = 0.25f))
+                        ) {
+                            LinearProgressIndicator(
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .fillMaxWidth()
+                                    .height(3.dp),
+                                color = Color(0xFF616161),
+                                trackColor = Color(0xFFE0E0E0)
+                            )
+                        }
+                    },
+                    success = { SubcomposeAsyncImageContent() },
+                    error = {
+                        Box(
+                            Modifier
+                                .fillMaxSize()
+                                .background(Color.LightGray.copy(alpha = 0.35f))
+                        )
+                    }
+                )
+            }
 
             Text(
                 text = if (report.isLost) "lost!" else "found!",
@@ -112,12 +141,6 @@ fun ReportDetailsScreen(
             val context = LocalContext.current
 
             if (lat != null && lng != null) {
-                Text(
-                    if (report.isLost) "last seen" else "found here",
-                    fontFamily = balooBhaijaan2Family,
-                    fontWeight = FontWeight.Medium
-                )
-
                 AddressBlock(lat = lat, lng = lng, modifier = Modifier.padding(top = 4.dp))
 
 
@@ -125,24 +148,40 @@ fun ReportDetailsScreen(
                 val cameraState = rememberCameraPositionState {
                     position = CameraPosition.fromLatLngZoom(spot, 16f)
                 }
+                var mapLoaded by remember { mutableStateOf(false) }
+
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp),
                     shape = RoundedCornerShape(20.dp)
                 ) {
-                    GoogleMap(
-                        cameraPositionState = cameraState,
-                        properties = MapProperties(isMyLocationEnabled = false),
-                        uiSettings = MapUiSettings(
-                            myLocationButtonEnabled = false,
-                            zoomControlsEnabled = true
-                        )
-                    ) {
-                        Marker(
-                            state = MarkerState(position = spot),
-                            title = report.name.ifBlank { "Location" }
-                        )
+                    Box(Modifier.fillMaxSize()) {
+                        GoogleMap(
+                            cameraPositionState = cameraState,
+                            properties = MapProperties(isMyLocationEnabled = false),
+                            uiSettings = MapUiSettings(
+                                myLocationButtonEnabled = false,
+                                zoomControlsEnabled = true
+                            ),
+                            onMapLoaded = { mapLoaded = true }
+                        ) {
+                            Marker(
+                                state = MarkerState(position = spot),
+                                title = report.name.ifBlank { "Location" }
+                            )
+                        }
+
+                        if (!mapLoaded) {
+                            LinearProgressIndicator(
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .fillMaxWidth()
+                                    .height(3.dp),
+                                color = Color(0xFF616161),
+                                trackColor = Color(0xFFE0E0E0)
+                            )
+                        }
                     }
                 }
 
@@ -174,6 +213,31 @@ fun ReportDetailsScreen(
                 }
             }
 
+            Spacer(Modifier.height(96.dp))
+        }
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Button(
+                onClick = onEdit,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = PrimaryPink,
+                    contentColor = Color.White
+                )
+            ) {
+                Text(
+                    "Edit",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                )
+            }
             // --- BOTTOM ACTION BUTTONS (scroll with page) ---
             if (currentUserId != null && report.userId == currentUserId) {
                 Spacer(Modifier.height(24.dp))
@@ -223,7 +287,6 @@ fun InlineLabel(label: String, value: String, modifier: Modifier = Modifier) {
     )
 }
 
-
 @Composable
 private fun AddressBlock(
     lat: Double,
@@ -232,8 +295,10 @@ private fun AddressBlock(
 ) {
     val context = LocalContext.current
     var text by remember(lat, lng) { mutableStateOf<String?>(null) }
+    var loading by remember(lat, lng) { mutableStateOf(true) }
 
     LaunchedEffect(lat, lng) {
+        loading = true
         text = try {
             withContext(Dispatchers.IO) {
                 val geocoder = Geocoder(context, Locale.getDefault())
@@ -245,13 +310,13 @@ private fun AddressBlock(
                         "${addr.featureName} ${addr.thoroughfare}, ${addr.locality ?: addr.subAdminArea ?: addr.adminArea ?: addr.countryName.orEmpty()}"
                     !addr.thoroughfare.isNullOrBlank() ->
                         "${addr.thoroughfare}, ${addr.locality ?: addr.adminArea ?: addr.countryName.orEmpty()}"
-                    else ->
-                        addr.getAddressLine(0)
+                    else -> addr.getAddressLine(0)
                 }
             }
         } catch (_: Exception) {
             null
         }
+        loading = false
     }
 
     Row(
@@ -260,11 +325,30 @@ private fun AddressBlock(
     ) {
         Icon(Icons.Filled.Place, contentDescription = null, tint = PrimaryPink)
         Spacer(Modifier.width(8.dp))
-        Text(
-            text = text ?: String.format(Locale.getDefault(), "%.5f, %.5f", lat, lng),
-            fontFamily = balooBhaijaan2Family,
-            fontWeight = FontWeight.Medium,
-            fontSize = 16.sp
-        )
+        if (loading) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(14.dp),
+                    strokeWidth = 2.dp,
+                    color = Color(0xFF616161),
+                    trackColor = Color(0xFFE0E0E0)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "Resolving address...",
+                    fontFamily = balooBhaijaan2Family,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 16.sp,
+                    color = LabelGray
+                )
+            }
+        } else {
+            Text(
+                text = text ?: String.format(Locale.getDefault(), "%.5f, %.5f", lat, lng),
+                fontFamily = balooBhaijaan2Family,
+                fontWeight = FontWeight.Medium,
+                fontSize = 16.sp
+            )
+        }
     }
 }

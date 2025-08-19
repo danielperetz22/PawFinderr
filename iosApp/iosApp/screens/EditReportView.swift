@@ -4,8 +4,6 @@ import CoreLocation
 import Shared
 import PhotosUI
 
-
-
 struct EditReportView: View {
     let report: ReportModel
     var onSave: (_ description: String,
@@ -16,20 +14,21 @@ struct EditReportView: View {
                  _ lng: Double?,
                  _ imageUrl: String?) -> Void
 
-    // Local editable copies
     @State private var descriptionText: String
     @State private var nameText: String
     @State private var phoneText: String
     @State private var isLostValue: Bool
 
-    // Location editing
     @State private var coords: CLLocationCoordinate2D?
     @State private var addressText: String = ""
     @State private var isGeocoding = false
     @State private var showLocationPicker = false
-    
+
     @State private var pickedItem: PhotosPickerItem?
     @State private var pickedImageData: Data?
+    @State private var isPickingImage = false
+
+    @State private var isSaving = false
 
     init(
         report: ReportModel,
@@ -55,7 +54,7 @@ struct EditReportView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    
+
                     HStack(spacing: 10) {
                         ToggleButton(
                             title: "Lost",
@@ -74,23 +73,40 @@ struct EditReportView: View {
                         ) { isLostValue = false }
                     }
 
-                    
-                    // --- Image with overlay floating buttons ---
                     ZStack(alignment: .bottomTrailing) {
-                        // Image preview (picked image takes precedence)
-                        Group {
+                        ZStack {
                             if let data = pickedImageData, let uiimg = UIImage(data: data) {
                                 Image(uiImage: uiimg)
                                     .resizable()
                                     .scaledToFill()
                             } else if !report.imageUrl.isEmpty, let url = URL(string: report.imageUrl) {
-                                AsyncImage(url: url) { img in
-                                    img.resizable().scaledToFill()
-                                } placeholder: {
-                                    Color.gray.opacity(0.2)
+                                AsyncImage(url: url) { phase in
+                                    switch phase {
+                                    case .empty:
+                                        ZStack {
+                                            Color.gray.opacity(0.2)
+                                            ProgressView()
+                                        }
+                                    case .success(let img):
+                                        img.resizable().scaledToFill()
+                                    case .failure:
+                                        Color.gray.opacity(0.25)
+                                            .overlay(
+                                                Image(systemName: "photo")
+                                                    .font(.system(size: 18, weight: .semibold))
+                                                    .foregroundColor(.secondary)
+                                            )
+                                    @unknown default:
+                                        Color.gray.opacity(0.2)
+                                    }
                                 }
                             } else {
                                 Color.gray.opacity(0.15)
+                            }
+
+                            if isPickingImage {
+                                Color.black.opacity(0.15)
+                                ProgressView()
                             }
                         }
                         .frame(maxWidth: .infinity)
@@ -98,20 +114,6 @@ struct EditReportView: View {
                         .clipped()
                         .cornerRadius(8)
 
-                        // --- Image with overlay floating buttons ---
-                        Group {
-                            if let data = pickedImageData, let uiimg = UIImage(data: data) {
-                                Image(uiImage: uiimg).resizable().scaledToFill()
-                            } else if !report.imageUrl.isEmpty, let url = URL(string: report.imageUrl) {
-                                AsyncImage(url: url) { img in img.resizable().scaledToFill() }
-                                    placeholder: { Color.gray.opacity(0.2) }
-                            } else {
-                                Color.gray.opacity(0.15)
-                            }
-                        }
-                        .frame(maxWidth: .infinity).frame(height: 220).clipped().cornerRadius(8)
-
-                        // bottom-leading: Revert (only when a new image is picked)
                         .overlay(alignment: .bottomLeading) {
                             if pickedImageData != nil {
                                 Button { pickedImageData = nil } label: {
@@ -127,7 +129,6 @@ struct EditReportView: View {
                             }
                         }
 
-                        // bottom-trailing: Edit (PhotosPicker)
                         .overlay(alignment: .bottomTrailing) {
                             PhotosPicker(selection: $pickedItem, matching: .images) {
                                 Image(systemName: "pencil")
@@ -140,24 +141,28 @@ struct EditReportView: View {
                             }
                             .padding(12)
                         }
-
                     }
                     .onChange(of: pickedItem) { newItem in
-                      Task {
-                        if let data = try? await newItem?.loadTransferable(type: Data.self) {
-                          pickedImageData = data
+                        Task {
+                            isPickingImage = true
+                            defer { isPickingImage = false }
+                            if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                                pickedImageData = data
+                            }
                         }
-                      }
                     }
 
-
-                    FloatingLabelTextField(text: $descriptionText, label: "description",placeholder: "Edit description" )
-                    FloatingLabelTextField(text: $phoneText, label: "phone number", placeholder: "Edit phone number").keyboardType(.phonePad)
-                    FloatingLabelTextField(text: $nameText, label: "name", placeholder: "Edit name" )
+                    FloatingLabelTextField(text: $descriptionText, label: "description", placeholder: "Edit description")
+                    FloatingLabelTextField(text: $phoneText, label: "phone number", placeholder: "Edit phone number")
+                        .keyboardType(.phonePad)
+                    FloatingLabelTextField(text: $nameText, label: "name", placeholder: "Edit name")
 
                     HStack(alignment: .firstTextBaseline, spacing: 10) {
                         if isGeocoding {
-                            Text("Resolving address…").foregroundColor(.secondary)
+                            HStack(spacing: 8) {
+                                ProgressView().scaleEffect(0.8)
+                                Text("Resolving address…").foregroundColor(.secondary)
+                            }
                         } else if !addressText.isEmpty {
                             Text(addressText)
                                 .foregroundColor(.primary)
@@ -180,11 +185,10 @@ struct EditReportView: View {
                             .background(Color.white.opacity(0.7))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color.white, lineWidth: 1)
-                                )
+                                    .stroke(Color.white, lineWidth: 1)
+                            )
                         }
                     }
-
 
                     Spacer().frame(height: 108)
                 }
@@ -196,19 +200,18 @@ struct EditReportView: View {
                 Spacer()
                 Button {
                     Task {
+                        guard !isSaving else { return }
+                        isSaving = true
+                        defer { isSaving = false }
+
                         var finalUrl: String? = nil
                         if let data = pickedImageData {
                             finalUrl = try? await CloudinaryUploader.upload(imageData: data)
                         }
 
-                        let isLostArg: KotlinBoolean? =
-                            KotlinBoolean(bool: isLostValue)
-
-                        let latArg: KotlinDouble? =
-                            coords.map { KotlinDouble(double: $0.latitude) }
-
-                        let lngArg: KotlinDouble? =
-                            coords.map { KotlinDouble(double: $0.longitude) }
+                        let isLostArg: KotlinBoolean? = KotlinBoolean(bool: isLostValue)
+                        let latArg: KotlinDouble? = coords.map { KotlinDouble(double: $0.latitude) }
+                        let lngArg: KotlinDouble? = coords.map { KotlinDouble(double: $0.longitude) }
 
                         ReportRepositoryImpl().updateReport(
                             reportId: report.id,
@@ -223,24 +226,32 @@ struct EditReportView: View {
                             if let error {
                                 print("Update failed: \(error)")
                             } else {
-                                print("Update succeeded")
                                 onSave(descriptionText, nameText, phoneText, isLostValue,
                                        coords?.latitude, coords?.longitude, finalUrl)
                             }
                         }
                     }
                 } label: {
-                    Text("Save changes")
-                        .font(.custom("BalooBhaijaan2-Bold", size: 16))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity, minHeight: 52)
-                        .background(Color("PrimaryPink"))
-                        .cornerRadius(14)
+                    ZStack {
+                        if (isSaving) {
+                            ProgressView()
+                                .progressViewStyle(.circular)
+                                .frame(width: 24, height: 24)
+                        } else {
+                        Text("Save changes")
+                                .font(.custom("BalooBhaijaan2-Bold", size: 16))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity, minHeight: 48)
+                                .background(Color("PrimaryPink"))
+                                .cornerRadius(8)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 8)
                 }
-
+                .disabled(isSaving || isPickingImage || isGeocoding)
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)
-
             }
         }
         .navigationTitle("Edit Report")
@@ -268,8 +279,8 @@ struct EditReportView: View {
             if let pm = placemarks.first {
                 let parts = [pm.name, pm.thoroughfare, pm.subThoroughfare, pm.locality, pm.administrativeArea, pm.country]
                 addressText = parts.compactMap { $0?.trimmingCharacters(in: .whitespaces) }
-                                   .filter { !$0.isEmpty }
-                                   .joined(separator: ", ")
+                    .filter { !$0.isEmpty }
+                    .joined(separator: ", ")
             } else {
                 addressText = ""
             }
@@ -299,7 +310,10 @@ private struct LocationPickerView: View {
     var body: some View {
         ZStack {
             Map(position: $cameraPosition)
-                .mapControls { MapUserLocationButton(); MapCompass() }
+                .mapControls {
+                    MapUserLocationButton()
+                    MapCompass()
+                }
                 .onMapCameraChange { context in currentCenter = context.region.center }
                 .ignoresSafeArea(edges: .bottom)
 
@@ -311,7 +325,9 @@ private struct LocationPickerView: View {
             VStack {
                 Spacer()
                 Text(String(format: "Lat: %.5f   Lng: %.5f", currentCenter.latitude, currentCenter.longitude))
-                    .font(.footnote).foregroundColor(.secondary).padding(.bottom, 8)
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+                    .padding(.bottom, 8)
 
                 HStack {
                     Button("Cancel") { dismiss() }
@@ -344,12 +360,12 @@ private struct LocationPickerView: View {
 }
 
 extension CloudinaryUploader {
-  static func upload(imageData data: Data) async throws -> String {
-    try await withCheckedThrowingContinuation { cont in
-      upload(data) { url in
-        if let url { cont.resume(returning: url) }
-        else { cont.resume(throwing: NSError(domain: "Cloudinary", code: -1)) }
-      }
+    static func upload(imageData data: Data) async throws -> String {
+        try await withCheckedThrowingContinuation { cont in
+            upload(data) { url in
+                if let url { cont.resume(returning: url) }
+                else { cont.resume(throwing: NSError(domain: "Cloudinary", code: -1)) }
+            }
+        }
     }
-  }
 }

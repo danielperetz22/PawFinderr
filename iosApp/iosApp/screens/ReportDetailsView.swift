@@ -16,10 +16,10 @@ struct ReportDetailsView: View {
     @State private var showEdit = false
     @State private var showDeleteConfirm = false
 
-    // Address state
     @State private var addressText: String = ""
     @State private var isGeocoding = false
     @State private var savingError: String?
+    @State private var isMapLoaded = false
 
     // Fallback for current user id on iOS
     @State private var me: String? = nil
@@ -49,12 +49,29 @@ struct ReportDetailsView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 8) {
 
-                    // Image
+                    // Image with loader
                     if !current.imageUrl.isEmpty, let url = URL(string: current.imageUrl) {
-                        AsyncImage(url: url) { img in
-                            img.resizable().scaledToFill()
-                        } placeholder: {
-                            Color.gray.opacity(0.2)
+                        AsyncImage(url: url) { phase in
+                            ZStack(alignment: .top) {
+                                switch phase {
+                                case .empty:
+                                    Color.gray.opacity(0.2)
+                                        .overlay(
+                                            ProgressView()
+                                        )
+                                case .success(let img):
+                                    img.resizable().scaledToFill()
+                                case .failure:
+                                    Color.gray.opacity(0.25)
+                                        .overlay(
+                                            Image(systemName: "photo")
+                                                .font(.system(size: 18, weight: .semibold))
+                                                .foregroundColor(.secondary)
+                                        )
+                                @unknown default:
+                                    Color.gray.opacity(0.2)
+                                }
+                            }
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 200)
@@ -62,39 +79,64 @@ struct ReportDetailsView: View {
                         .cornerRadius(8)
                     }
 
-                    // Lost / Found
+
                     Text(current.isLost ? "lost!" : "found!")
                         .font(.custom("BalooBhaijaan2-Bold", size: 28))
                         .foregroundColor(Color.darkGreen)
 
-                    // Inline fields
+
                     LabeledInline(title: "description :", value: current.description_)
                     LabeledInline(title: "contact me :", value: current.phone.isEmpty ? "—" : current.phone)
                     if !current.name.isEmpty {
                         LabeledInline(title: "", value: current.name)
                     }
 
-                    // Location + Map
                     if let lat = safeLat, let lng = safeLng {
+                        // Address line with geocoding loader
                         HStack(alignment: .firstTextBaseline, spacing: 8) {
                             Image(systemName: "mappin.and.ellipse")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(Color("PrimaryPink"))
-                            Text(addressText.isEmpty
-                                 ? String(format: "Lat %.5f, Lng %.5f", lat, lng)
-                                 : addressText)
-                            .font(.custom("BalooBhaijaan2-Medium", size: 16))
-                            .foregroundColor(addressText.isEmpty ? .secondary : .primary)
-                            .lineLimit(nil)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                            if isGeocoding {
+                                HStack(spacing: 8) {
+                                    ProgressView()
+                                        .scaleEffect(0.7)
+                                    Text("Resolving address...")
+                                        .font(.custom("BalooBhaijaan2-Medium", size: 16))
+                                        .foregroundColor(.secondary)
+                                }
+                            } else {
+                                Text(addressText.isEmpty
+                                     ? String(format: "Lat %.5f, Lng %.5f", lat, lng)
+                                     : addressText)
+                                .font(.custom("BalooBhaijaan2-Medium", size: 16))
+                                .foregroundColor(addressText.isEmpty ? .secondary : .primary)
+                                .lineLimit(nil)
+                            }
                         }
 
-                        Map(initialPosition: .region(region(for: lat, lng))) {
-                            Annotation("", coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lng)) {
-                                Image(systemName: "mappin.circle.fill")
-                                    .font(.title2)
-                                    .foregroundColor(.red)
-                                    .shadow(radius: 1)
+                        // Map with top linear loader until first render
+                        ZStack(alignment: .top) {
+                            Map(initialPosition: .region(region(for: lat, lng))) {
+                                Annotation("", coordinate: CLLocationCoordinate2D(latitude: lat, longitude: lng)) {
+                                    Image(systemName: "mappin.circle.fill")
+                                        .font(.title2)
+                                        .foregroundColor(.red)
+                                        .shadow(radius: 1)
+                                }
+                            }
+                            .onAppear {
+                                isMapLoaded = false
+                                // Best-effort: mark map as loaded shortly after appear
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                                    isMapLoaded = true
+                                }
+                            }
+                            
+                            if !isMapLoaded {
+                                ProgressView()
+
                             }
                         }
                         .frame(height: 200)
@@ -122,6 +164,7 @@ struct ReportDetailsView: View {
                                     .foregroundColor(.red)
                                     .padding(8)
                             }
+
 
                             Spacer()
 
@@ -192,6 +235,7 @@ struct ReportDetailsView: View {
                     phone:      phone,
                     imageUrl:   imageUrl ?? current.imageUrl,
                     isLost:     isLost,
+
                     lat:        newLat,
                     lng:        newLng,
                     createdAt:  current.createdAt
@@ -214,8 +258,8 @@ struct ReportDetailsView: View {
         }
     }
 
-    // MARK: - Helpers
 
+    // MARK: - Helpers
     private var safeLat: Double? {
         let lat = current.lat
         return lat.isNaN ? nil : lat

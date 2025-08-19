@@ -273,11 +273,11 @@ fun NewReportScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(44.dp),
-                shape  = RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(2.dp, Color.White),
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = Color.White.copy(alpha = 0.3f),
-                    contentColor   = Color(0xFFFFC0C0)
+                    contentColor = Color(0xFFFFC0C0)
                 )
             ) { Text("📍  Add location") }
 
@@ -285,27 +285,7 @@ fun NewReportScreen(
                 Text("📍 Location set ($lat, $lng)")
             }
 
-            if (showPicker) {
-                MapPickerDialog(
-                    onDismiss = { showPicker = false },
-                    onPicked  = { lat, lng ->
-                        currentPicked = lat to lng
-                        errorText = null
-                    }
-                )
-            }
-
             Spacer(Modifier.height(12.dp))
-
-            // NEW: error label
-            if (errorText != null) {
-                Text(
-                    errorText!!,
-                    color = Color(0xFFD32F2F),
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(Modifier.height(4.dp))
-            }
 
             Button(
                 onClick = {
@@ -344,9 +324,10 @@ fun NewReportScreen(
                         }
                     }
                 },
+                enabled = !uploading,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(44.dp),
+                    .height(48.dp),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFFFFC0C0),
@@ -362,11 +343,35 @@ fun NewReportScreen(
                 } else {
                     Text(
                         "Publish Report",
+                        fontFamily = balooBhaijaan2Family,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
             }
+
+            if (showPicker) {
+                MapPickerDialog(
+                    onDismiss = { showPicker = false },
+                    onPicked = { lat, lng ->
+                        currentPicked = lat to lng
+                        errorText = null
+                    }
+                )
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // NEW: error label
+            if (errorText != null) {
+                Text(
+                    errorText!!,
+                    color = Color(0xFFD32F2F),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(4.dp))
+            }
+
         }
     }
 }
