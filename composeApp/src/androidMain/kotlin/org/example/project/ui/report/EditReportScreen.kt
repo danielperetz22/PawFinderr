@@ -72,7 +72,7 @@ fun EditReportScreen(
 ) {
     // --- image state ---
     var localImageUri by remember { mutableStateOf<Uri?>(null) }
-    var isSaving by remember { mutableStateOf(false) }
+//    var isSaving by remember { mutableStateOf(false) }
     var showImageSourceDialog by remember { mutableStateOf(false) }
     var cameraUri by remember { mutableStateOf<Uri?>(null) }
 
