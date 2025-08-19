@@ -83,6 +83,8 @@ fun EditReportScreen(
     var showPicker by remember { mutableStateOf(false) }
     var locationErr by remember { mutableStateOf<String?>(null) }
 
+    var isSaving by remember { mutableStateOf(false) }
+
     val scroll = rememberScrollState()
 
     Box(
@@ -204,48 +206,64 @@ fun EditReportScreen(
                 Text(it, color = MaterialTheme.colorScheme.error, fontSize = 14.sp)
             }
 
-            Spacer(Modifier.height(96.dp))
-        }
-
-        // Save button is INSIDE the Box so .align works
-        Button(
-            onClick = {
-                val lat = draftLat
-                val lng = draftLng
-                if (lat == null || lng == null) {
-                    locationErr = "Please pick a location before saving."
-                    return@Button
-                }
-                var finalUrl: String? = null
-                if (localImageUri != null) {
-                    // use a scope tied to composition rather than creating a new one
-                    scope.launch {
-                        try {
-                            finalUrl = uploadToCloudinary(context, localImageUri!!)
-                            onSave(description, name, phone, isLost, lat, lng, finalUrl)
-                        } catch (_: Throwable) {
-                            onSave(description, name, phone, isLost, lat, lng, report.imageUrl)
+            // Save button is INSIDE the Box so .align works
+            Button(
+                onClick = {
+                    val lat = draftLat
+                    val lng = draftLng
+                    if (lat == null || lng == null) {
+                        locationErr = "Please pick a location before saving."
+                        return@Button
+                    }
+                    var finalUrl: String? = null
+                    if (localImageUri != null) {
+                        isSaving = true
+                        scope.launch {
+                            try {
+                                finalUrl = uploadToCloudinary(context, localImageUri!!)
+                                onSave(description, name, phone, isLost, lat, lng, finalUrl)
+                            } catch (_: Throwable) {
+                                onSave(description, name, phone, isLost, lat, lng, report.imageUrl)
+                            } finally {
+                                isSaving = false
+                            }
+                        }
+                    } else {
+                        isSaving = true
+                        scope.launch {
+                            try {
+                                onSave(description, name, phone, isLost, lat, lng, null)
+                            } finally {
+                                isSaving = false
+                            }
                         }
                     }
+                },
+                enabled = !isSaving,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFFFC0C0),
+                    contentColor = Color.White
+                )
+            ) {
+                if (isSaving) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = Color.White
+                    )
                 } else {
-                    onSave(description, name, phone, isLost, lat, lng, null)
+                    Text(
+                        "Save changes",
+                        fontFamily = balooBhaijaan2Family,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
-            },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-                .fillMaxWidth()
-                .height(52.dp),
-            shape = RoundedCornerShape(14.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = PrimaryPink,
-                contentColor = Color.White
-            )
-        ) {
-            Text(
-                "Save changes",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-            )
+            }
         }
 
         // Open your existing MapPickerDialog when the user taps "Change location"

@@ -18,7 +18,7 @@ struct MyReportsView: View {
 
                 if isLoading && reports.isEmpty {
                     VStack(spacing: 10) {
-                        ProgressView().scaleEffect(1.2)
+                        DogLoaderView()
                         Text(isRefreshing ? "Refreshing..." : "Loading reports...")
                             .font(.custom("BalooBhaijaan2-Regular", size: 14))
                             .foregroundColor(.secondary)

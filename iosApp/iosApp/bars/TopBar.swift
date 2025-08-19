@@ -47,17 +47,6 @@ struct TopBar<Content: View>: View {
         content
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                // Leading “Back” button
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.left")
-                    }
-                    .tint(.darkGray)
-                }
-            }
     }
 }
 

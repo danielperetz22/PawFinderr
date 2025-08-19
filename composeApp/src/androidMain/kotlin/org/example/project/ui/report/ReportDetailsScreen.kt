@@ -51,7 +51,7 @@ private val balooBhaijaan2Family = FontFamily(
     Font(R.font.baloobhaijaan2_extrabold, FontWeight.ExtraBold)
 )
 
-private val BgGray      = Color(0xFFF3F3F3)
+private val BgGray      = Color(0xFFF0F0F0)
 private val LostColor   = Color(0xFF90D1D8)
 private val PrimaryPink = Color(0xFFFFC0C0)
 private val LabelGray   = Color(0xFF8D8D8D)

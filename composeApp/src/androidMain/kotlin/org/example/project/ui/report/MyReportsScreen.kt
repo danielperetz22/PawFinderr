@@ -62,7 +62,12 @@ fun MyReportsScreen(
             isLoading && sortedReports.isEmpty() -> Box(Modifier.fillMaxSize())
             sortedReports.isEmpty() -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No reports yet")
+                    Text("No reports yet",
+                        fontFamily = balooBhaijaan2Family,
+                        fontWeight = FontWeight.ExtraBold)
+                    Text("pull to refresh",
+                        fontFamily = balooBhaijaan2Family,
+                        fontWeight = FontWeight.Medium)
                 }
             }
             else -> {
@@ -184,10 +189,8 @@ private fun ReportItem(
             ) {
                 Text(
                     text = title.ifBlank { "Untitled" },
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontFamily = balooBhaijaan2Family,
-                        fontWeight = FontWeight.Bold
-                    ),
+                    fontFamily = balooBhaijaan2Family,
+                    fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -209,10 +212,8 @@ private fun ReportItem(
                     Text(
                         text = if (rpt.isLost) "Lost" else "Found",
                         color = Color.White,
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            fontFamily = balooBhaijaan2Family,
-                            fontWeight = FontWeight.Bold
-                        ),
+                        fontFamily = balooBhaijaan2Family,
+                        fontWeight = FontWeight.Bold,
                         modifier = Modifier
                             .background(
                                 color = Color(0xFFFEB0B2),
@@ -225,11 +226,9 @@ private fun ReportItem(
                         Spacer(Modifier.width(8.dp))
                         Text(
                             text = rpt.phone,
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                fontFamily = balooBhaijaan2Family,
-                                fontWeight = FontWeight.Medium,
-                                color = Color.Gray
-                            ),
+                            fontFamily = balooBhaijaan2Family,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Gray,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )

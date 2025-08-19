@@ -43,6 +43,7 @@ fun Modifier.bottomBorder(width: Dp, color: Color): Modifier = this.then(
 @Composable
 fun AppTopBar(
     title: String,
+    showBack: Boolean,
     onBackClick: () -> Unit
 ) {
     CenterAlignedTopAppBar(
@@ -52,11 +53,10 @@ fun AppTopBar(
             containerColor = Color.White.copy(alpha = 0.3f)
         ),
         navigationIcon = {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back"
-                )
+            if (showBack) {
+                IconButton(onClick = onBackClick) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                }
             }
         },
         modifier = Modifier
@@ -66,12 +66,13 @@ fun AppTopBar(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 fun AppTopBarPreview() {
     AppTopBar(
         title = "Feed",
-        onBackClick = { /* אין פעולה ב־Preview */ }
+        showBack = false,
+        onBackClick = { }
     )
 }
+
