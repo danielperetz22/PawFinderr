@@ -48,7 +48,7 @@ struct ReportDetailsView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 8) {
-
+                    
                     // Image with loader
                     if !current.imageUrl.isEmpty, let url = URL(string: current.imageUrl) {
                         AsyncImage(url: url) { phase in
@@ -78,26 +78,26 @@ struct ReportDetailsView: View {
                         .clipped()
                         .cornerRadius(8)
                     }
-
-
+                    
+                    
                     Text(current.isLost ? "lost!" : "found!")
                         .font(.custom("BalooBhaijaan2-Bold", size: 28))
                         .foregroundColor(Color.darkGreen)
-
-
+                    
+                    
                     LabeledInline(title: "description :", value: current.description_)
                     LabeledInline(title: "contact me :", value: current.phone.isEmpty ? "—" : current.phone)
                     if !current.name.isEmpty {
                         LabeledInline(title: "", value: current.name)
                     }
-
+                    
                     if let lat = safeLat, let lng = safeLng {
                         // Address line with geocoding loader
                         HStack(alignment: .firstTextBaseline, spacing: 8) {
                             Image(systemName: "mappin.and.ellipse")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(Color("PrimaryPink"))
-
+                            
                             if isGeocoding {
                                 HStack(spacing: 8) {
                                     ProgressView()
@@ -115,7 +115,7 @@ struct ReportDetailsView: View {
                                 .lineLimit(nil)
                             }
                         }
-
+                        
                         // Map with top linear loader until first render
                         ZStack(alignment: .top) {
                             Map(initialPosition: .region(region(for: lat, lng))) {
@@ -136,12 +136,12 @@ struct ReportDetailsView: View {
                             
                             if !isMapLoaded {
                                 ProgressView()
-
+                                
                             }
                         }
                         .frame(height: 200)
                         .cornerRadius(12)
-
+                        
                     } else {
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color.white)
@@ -152,6 +152,26 @@ struct ReportDetailsView: View {
                                     .foregroundColor(.secondary)
                             )
                     }
+                    
+                    if let lat = safeLat, let lng = safeLng {
+                        Button {
+                            openInAppleMaps(
+                                lat: lat,
+                                lng: lng,
+                                name: current.name.isEmpty ? "Location" : current.name
+                            )
+                        } label: {
+                            Text("Open in Maps")
+                                .font(.custom("BalooBhaijaan2-Bold", size: 16))
+                                .underline(true)
+                                .foregroundColor(Color.darkGray)
+                                .padding(.vertical, 4)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    
+                }
+
 
                     // ----- Bottom owner-only action icons (NOT sticky) -----
                     if isOwner {
@@ -235,7 +255,6 @@ struct ReportDetailsView: View {
                     phone:      phone,
                     imageUrl:   imageUrl ?? current.imageUrl,
                     isLost:     isLost,
-
                     lat:        newLat,
                     lng:        newLng,
                     createdAt:  current.createdAt
@@ -259,7 +278,6 @@ struct ReportDetailsView: View {
     }
 
 
-    // MARK: - Helpers
     private var safeLat: Double? {
         let lat = current.lat
         return lat.isNaN ? nil : lat
@@ -310,7 +328,6 @@ struct ReportDetailsView: View {
     }
 }
 
-// MARK: - Inline label
 
 private struct LabeledInline: View {
     let title: String
@@ -328,5 +345,16 @@ private struct LabeledInline: View {
         }
     }
 }
+
+private func openInAppleMaps(lat: Double, lng: Double, name: String) {
+    let coord = CLLocationCoordinate2D(latitude: lat, longitude: lng)
+    let placemark = MKPlacemark(coordinate: coord)
+    let item = MKMapItem(placemark: placemark)
+    item.name = name
+    item.openInMaps(launchOptions: [
+        MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving
+    ])
+}
+
 
 

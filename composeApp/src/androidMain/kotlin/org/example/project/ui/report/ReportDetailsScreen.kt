@@ -26,6 +26,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -198,7 +199,11 @@ fun ReportDetailsScreen(
                             context.startActivity(Intent(Intent.ACTION_VIEW, gmm))
                         }
                     }
-                ) { Text("Open in Google Maps") }
+                ) { Text("Open in Google Maps",
+                    fontFamily = balooBhaijaan2Family,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.DarkGray,
+                    textDecoration = TextDecoration.Underline) }
             } else {
                 Box(
                     modifier = Modifier
@@ -213,32 +218,7 @@ fun ReportDetailsScreen(
                 }
             }
 
-            Spacer(Modifier.height(96.dp))
-        }
 
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Button(
-                onClick = onEdit,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = PrimaryPink,
-                    contentColor = Color.White
-                )
-            ) {
-                Text(
-                    "Edit",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                )
-            }
-            // --- BOTTOM ACTION BUTTONS (scroll with page) ---
             if (currentUserId != null && report.userId == currentUserId) {
                 Spacer(Modifier.height(24.dp))
 

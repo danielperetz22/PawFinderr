@@ -5,7 +5,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -13,8 +15,7 @@ import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,11 +26,13 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
 import org.example.project.R
 import org.example.project.data.report.ReportModel
 import org.example.project.ui.components.LoadingAnimation
+
 
 private val balooBhaijaan2Family = FontFamily(
     Font(R.font.baloobhaijaan2_regular, FontWeight.Normal),
@@ -49,27 +52,47 @@ fun MyReportsScreen(
     isRefreshing: Boolean = false,
     onRefresh: () -> Unit = {}
 ) {
+
+
     val sortedReports = remember(reports) { reports.sortedByDescending { it.id } }
-    val pullState = rememberPullRefreshState(refreshing = isRefreshing, onRefresh = onRefresh)
+
+    val ptr = rememberPullRefreshState(
+        refreshing = isRefreshing,
+        onRefresh = onRefresh
+    )
+
 
     Box(
         Modifier
             .fillMaxSize()
             .background(Color(0xFFF0F0F0))
-            .pullRefresh(pullState)
+            .pullRefresh(ptr) // <- attach the gesture handler here
     ) {
         when {
-            isLoading && sortedReports.isEmpty() -> Box(Modifier.fillMaxSize())
+            isLoading && sortedReports.isEmpty() -> {
+                // Keep it scrollable so pull works when empty
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                ) {}
+            }
+
             sortedReports.isEmpty() -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No reports yet",
-                        fontFamily = balooBhaijaan2Family,
-                        fontWeight = FontWeight.ExtraBold)
-                    Text("pull to refresh",
-                        fontFamily = balooBhaijaan2Family,
-                        fontWeight = FontWeight.Medium)
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+
+                ) {
+                    Text("No reports yet", fontFamily = balooBhaijaan2Family, fontWeight = FontWeight.Bold, fontSize = 32.sp, color = Color.Gray)
+                    Text("Pull to refresh", fontFamily = balooBhaijaan2Family, fontWeight = FontWeight.Medium, fontSize = 24.sp, color = Color.Gray)
                 }
             }
+
             else -> {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -82,15 +105,14 @@ fun MyReportsScreen(
             }
         }
 
+        // The indicator that shows/hides based on `isRefreshing`
         PullRefreshIndicator(
             refreshing = isRefreshing,
-            state = pullState,
-            modifier = Modifier.align(Alignment.TopCenter),
-            backgroundColor = Color(0xFFE0E0E0),
-            contentColor = Color(0xFF616161)
+            state = ptr,
+            modifier = Modifier.align(Alignment.TopCenter)
         )
 
-        if (isLoading && sortedReports.isEmpty()) {
+        if (isLoading && !isRefreshing && sortedReports.isEmpty()) {
             LoadingAnimation(
                 isLoading = true,
                 modifier = Modifier
@@ -98,6 +120,7 @@ fun MyReportsScreen(
                     .padding(bottom = 56.dp)
             )
         }
+
 
         SmallFloatingActionButton(
             onClick = onPublishClicked,
@@ -238,3 +261,4 @@ private fun ReportItem(
         }
     }
 }
+
