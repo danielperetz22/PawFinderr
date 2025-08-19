@@ -193,7 +193,7 @@ fun ReportDetailsScreen(
                         )
                     }
                     IconButton(onClick = onEdit, modifier = Modifier.size(48.dp)) {
-                        Icon(Icons.Outlined.Edit, contentDescription = "Edit", tint = PrimaryPink)
+                        Icon(Icons.Outlined.Edit, contentDescription = "Edit", tint = LabelGray)
                     }
                 }
             }

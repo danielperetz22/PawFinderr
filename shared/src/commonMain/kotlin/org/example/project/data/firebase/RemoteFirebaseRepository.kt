@@ -12,12 +12,10 @@ import org.example.project.data.report.ReportModel
 class RemoteFirebaseRepository : FirebaseRepository {
 
     override suspend fun signUp(email: String, password: String) {
-        // יוצר חשבון חדש ב‑Firebase Auth
         Firebase.auth.createUserWithEmailAndPassword(email, password)
     }
 
     override suspend fun signIn(email: String, password: String) {
-        // מתחבר חשבון קיים
         Firebase.auth.signInWithEmailAndPassword(email, password)
     }
 
@@ -25,7 +23,6 @@ class RemoteFirebaseRepository : FirebaseRepository {
         Firebase.auth.currentUser?.uid
 
     override suspend fun saveUserProfile(uid: String, email: String) {
-        // שומר מסמך משתמש ב‑Firestore תחת collection “users”
         Firebase.firestore
             .collection("users")
             .document(uid)
@@ -60,12 +57,10 @@ class RemoteFirebaseRepository : FirebaseRepository {
         lat: Double,
         lng: Double
     ) {
-        // ① get the current user’s UID
         val userId = Firebase.auth.currentUser
             ?.uid
             ?: throw IllegalStateException("No authenticated user!")
 
-        // ② write a document that includes userId
         Firebase.firestore
             .collection("reports")
             .add(
@@ -82,12 +77,10 @@ class RemoteFirebaseRepository : FirebaseRepository {
             )
     }
 
-    // shared RemoteFirebaseRepository
     override suspend fun getReportsForUser(userId: String): List<ReportModel> {
         val snapshot = Firebase.firestore
             .collection("reports")
             .where { "userId" equalTo userId }
-            // .orderBy("createdAt", Direction.DESCENDING)   // TEMPORARILY DISABLE
             .get()
 
         val results = mutableListOf<ReportModel>()
@@ -110,7 +103,6 @@ class RemoteFirebaseRepository : FirebaseRepository {
             }
         }
 
-        // newest first on client
         return results.sortedByDescending { it.createdAt }
     }
     override suspend fun getAllReports(): List<ReportModel> {
@@ -158,7 +150,6 @@ class RemoteFirebaseRepository : FirebaseRepository {
         lat: Double?,
         lng: Double?
     ) {
-        // build a partial update map (only fields you pass != null will be updated)
         val data = mutableMapOf<String, Any>()
         description?.let { data["description"] = it }
         name?.let        { data["name"]        = it }
@@ -169,7 +160,7 @@ class RemoteFirebaseRepository : FirebaseRepository {
         lng?.let {data["lng"] = it}
 
 
-      if (data.isEmpty()) return // nothing to update
+      if (data.isEmpty()) return
 
         Firebase.firestore
             .collection("reports")

@@ -1,4 +1,4 @@
-package org.example.project.user
+package org.example.project.data.user
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -8,12 +8,23 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.example.project.data.firebase.FirebaseRepository
+import org.example.project.data.firebase.RemoteFirebaseRepository
+
+
+class UserVMFactory {
+    fun create(): UserViewModel =
+        UserViewModel(
+            repo  = RemoteFirebaseRepository(),
+            scope = CoroutineScope(Dispatchers.Main)
+        )
+}
+
 
 class UserViewModel(
     private val repo: FirebaseRepository,
-    // אפשר להחליף ל־Dispatchers.Default או לבנות scope חיצוני עם expect/actual
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.Main)
 ) {
+    constructor(repo: FirebaseRepository) : this(repo, CoroutineScope(Dispatchers.Main))
 
     private val _currentUid = MutableStateFlow<String?>(repo.currentUserUid())
     val currentUid: StateFlow<String?> = _currentUid.asStateFlow()
@@ -26,6 +37,7 @@ class UserViewModel(
 
     private val _currentEmail = MutableStateFlow<String?>(repo.currentUserEmail())
     val currentEmail: StateFlow<String?> = _currentEmail.asStateFlow()
+
 
     fun signUp(email: String, password: String) {
         scope.launch {
