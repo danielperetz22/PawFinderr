@@ -79,7 +79,7 @@ fun ProfileScreen(onSignOut: () -> Unit = {},
         ) {
             if (signedIn != null) {
                 OutlinedTextField(
-                    value = email ?: "",
+                    value = email.orEmpty(),
                     onValueChange = {},
                     label = { Text("email") },
                     readOnly = true,
@@ -106,10 +106,9 @@ fun ProfileScreen(onSignOut: () -> Unit = {},
                 if (errorMessage != null) {
                     Text(text = errorMessage, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
                 }
-                if (localError != null) {
-                    Text(localError!!, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
-                } else if (errorMessage != null) {
-                    Text(errorMessage, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
+                val errorToShow = localError ?: errorMessage
+                errorToShow?.let {
+                    Text(it, color = Color.Red, modifier = Modifier.padding(top = 8.dp))
                 }
             }
         }

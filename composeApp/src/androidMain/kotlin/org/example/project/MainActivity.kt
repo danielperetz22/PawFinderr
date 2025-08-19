@@ -211,7 +211,7 @@ class MainActivity : ComponentActivity() {
 
                             val pickedLocationFlow = navController.currentBackStackEntry
                                 ?.savedStateHandle
-                                ?.getStateFlow("picked_location", null as Pair<Double, Double>?)
+                                ?.getStateFlow<Pair<Double, Double>?>(key = "picked_location", initialValue = null)
                             val pickedLocation by (pickedLocationFlow?.collectAsState() ?: remember { mutableStateOf(null) })
 
 
@@ -240,6 +240,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
+                        // 6) reports
                         composable("reports") {
                             val reportVm = remember { ReportViewModel() }
                             val userVm: AndroidUserViewModel = viewModel()
@@ -254,11 +255,17 @@ class MainActivity : ComponentActivity() {
                                 is ReportUiState.ReportsLoaded -> (uiState as ReportUiState.ReportsLoaded).reports
                                 else -> emptyList()
                             }
-                            val isLoading = uiState is ReportUiState.LoadingReports
+
+                            val isLoadingEmpty = uiState is ReportUiState.LoadingReports && reports.isEmpty()
+                            val isRefreshing = uiState is ReportUiState.LoadingReports && reports.isNotEmpty()
 
                             MyReportsScreen(
                                 reports = reports,
-                                isLoading = isLoading,
+                                isLoading = isLoadingEmpty,
+                                isRefreshing = isRefreshing,
+                                onRefresh = {
+                                    currentUid?.let { reportVm.loadReportsForUser(it) }
+                                },
                                 onPublishClicked = { navController.navigate("new-report") },
                                 onItemClick = { rpt ->
                                     val json = Json.encodeToString(rpt)
@@ -267,6 +274,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
+
                         composable("report-details/{reportJson}") { backStackEntry ->
                             val raw = backStackEntry.arguments?.getString("reportJson").orEmpty()
                             val decoded = URLDecoder.decode(raw, Charsets.UTF_8.name())

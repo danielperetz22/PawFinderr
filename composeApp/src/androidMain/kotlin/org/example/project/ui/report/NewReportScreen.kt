@@ -214,8 +214,9 @@ fun NewReportScreen(
                     },
                     dismissButton = {
                         TextButton(onClick = {
-                            cameraUri = createImageUri()
-                            cameraLauncher.launch(cameraUri!!)
+                            val tmp = createImageUri()
+                            cameraUri = tmp
+                            cameraLauncher.launch(tmp)
                             showDialog = false
                         }) { Text("photo") }
                     }
@@ -302,7 +303,11 @@ fun NewReportScreen(
                         return@Button
                     }
 
-                    val (lat, lng) = currentPicked!!
+                    val coords = currentPicked ?: run {
+                        errorText = "Please pick a location."
+                        return@Button
+                    }
+                    val (lat, lng) = coords
                     selectedImageUri?.let { uri ->
                         uploading = true
                         errorText = null
@@ -363,9 +368,9 @@ fun NewReportScreen(
             Spacer(Modifier.height(12.dp))
 
             // NEW: error label
-            if (errorText != null) {
+            errorText?.let { msg ->
                 Text(
-                    errorText!!,
+                    msg,
                     color = Color(0xFFD32F2F),
                     modifier = Modifier.fillMaxWidth()
                 )
