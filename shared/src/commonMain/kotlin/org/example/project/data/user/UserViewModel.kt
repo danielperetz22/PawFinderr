@@ -8,16 +8,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.example.project.data.firebase.FirebaseRepository
-import org.example.project.data.firebase.RemoteFirebaseRepository
-
-
-class UserVMFactory {
-    fun create(): UserViewModel =
-        UserViewModel(
-            repo  = RemoteFirebaseRepository(),
-            scope = CoroutineScope(Dispatchers.Main)
-        )
-}
 
 
 class UserViewModel(
