@@ -35,7 +35,11 @@ class UserViewModel(
             _error.value = null
             try {
                 repo.signUp(email, password)
-                val uid = repo.currentUserUid()!!
+                val uid = repo.currentUserUid() ?: run {
+                    _error.value = "Could not get user id after sign up"
+                    _isLoading.value = false
+                    return@launch
+                }
                 repo.saveUserProfile(uid, email)
                 _currentUid.value = uid
             } catch (e: Exception) {

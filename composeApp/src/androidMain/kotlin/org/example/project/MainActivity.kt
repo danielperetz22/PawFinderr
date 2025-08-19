@@ -211,7 +211,7 @@ class MainActivity : ComponentActivity() {
 
                             val pickedLocationFlow = navController.currentBackStackEntry
                                 ?.savedStateHandle
-                                ?.getStateFlow("picked_location", null as Pair<Double, Double>?)
+                                ?.getStateFlow<Pair<Double, Double>?>(key = "picked_location", initialValue = null)
                             val pickedLocation by (pickedLocationFlow?.collectAsState() ?: remember { mutableStateOf(null) })
 
 

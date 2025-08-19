@@ -6,7 +6,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,7 +24,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.net.Uri
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -101,12 +99,12 @@ fun EditReportScreen(
     var isLost by remember { mutableStateOf(report.isLost) }
 
     // --- location ---
-    var draftLat by remember { mutableStateOf(report.lat) }   // Double?
-    var draftLng by remember { mutableStateOf(report.lng) }   // Double?
+    var draftLat by remember { mutableDoubleStateOf(report.lat) }   // Double?
+    var draftLng by remember { mutableDoubleStateOf(report.lng) }   // Double?
     var showPicker by remember { mutableStateOf(false) }
     var locationErr by remember { mutableStateOf<String?>(null) }
+    var errorText by remember { mutableStateOf<String?>(null) }
 
-    var isSaving by remember { mutableStateOf(false) }
 
     val scroll = rememberScrollState()
 
@@ -210,27 +208,27 @@ fun EditReportScreen(
                         locationErr = "Please pick a location before saving."
                         return@Button
                     }
-                    var finalUrl: String? = null
-                    if (localImageUri != null) {
-                        isSaving = true
-                        scope.launch {
-                            try {
-                                finalUrl = uploadToCloudinary(context, localImageUri!!)
-                                onSave(description, name, phone, isLost, lat, lng, finalUrl)
+                    val hasImage = localImageUri != null || report.imageUrl.isNotBlank()
+
+                    val missing = description.isBlank() || name.isBlank() || phone.isBlank() || !hasImage
+
+                    if (missing) {
+                        errorText = "Please fill all fields, add a photo, and set a location."
+                        return@Button
+                    }
+                    errorText = null
+                    isSaving = true
+                    val imageUri = localImageUri
+
+                    scope.launch {
+                        try {
+                            val finalUrl: String? = imageUri?.let { uploadToCloudinary(context, it) }
+                            onSave(description, name, phone, isLost, lat, lng, finalUrl)
                             } catch (_: Throwable) {
-                                onSave(description, name, phone, isLost, lat, lng, report.imageUrl)
-                            } finally {
-                                isSaving = false
-                            }
-                        }
-                    } else {
-                        isSaving = true
-                        scope.launch {
-                            try {
-                                onSave(description, name, phone, isLost, lat, lng, null)
-                            } finally {
-                                isSaving = false
-                            }
+                            // keep old image if upload fails
+                            onSave(description, name, phone, isLost, lat, lng, report.imageUrl)
+                        } finally {
+                            isSaving = false
                         }
                     }
                 },
@@ -258,6 +256,10 @@ fun EditReportScreen(
                         fontWeight = FontWeight.Bold
                     )
                 }
+            }
+            errorText?.let {
+                Spacer(Modifier.height(8.dp))
+                Text(it, color = MaterialTheme.colorScheme.error, fontSize = 14.sp)
             }
 
         }
@@ -288,10 +290,17 @@ fun EditReportScreen(
                 },
                 dismissButton = {
                     TextButton(onClick = {
-                        cameraUri = createImageUri(context)
-                        cameraLauncher.launch(cameraUri!!)
+                        val tmp = createImageUri(context)
+                        if (tmp == null) {
+                            showImageSourceDialog = false
+                            return@TextButton
+                        }
+                        cameraUri = tmp
+                        cameraLauncher.launch(tmp)
                         showImageSourceDialog = false
-                    }) { Text("Camera") }
+                    }) {
+                        Text("Camera")
+                    }
                 }
             )
         }
@@ -299,16 +308,17 @@ fun EditReportScreen(
 }
 
 // Helper for camera Uri
-private fun createImageUri(context: Context): Uri {
-    val cv = android.content.ContentValues().apply {
+private fun createImageUri(context: Context): Uri? {
+    val values = android.content.ContentValues().apply {
         put(android.provider.MediaStore.Images.Media.DISPLAY_NAME, "report_${System.currentTimeMillis()}.jpg")
         put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
     }
     return context.contentResolver.insert(
         android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-        cv
-    )!!
+        values
+    )
 }
+
 
 suspend fun uploadToCloudinary(ctx: Context, uri: Uri): String =
     withContext(Dispatchers.IO) {
@@ -386,12 +396,18 @@ private fun LocationEditor(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
+        val locationText = address ?: when {
+            spot != null -> String.format(
+                Locale.getDefault(),
+                "%.5f, %.5f",
+                spot.latitude,
+                spot.longitude
+            )
+            else -> "No location selected"
+        }
+
         Text(
-            text = when {
-                address != null-> address!!
-                spot != null-> String.format(Locale.getDefault(), "%.5f, %.5f", lat, lng)
-                else-> "No location selected"
-            },
+            text = locationText,
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.weight(1f)
         )
