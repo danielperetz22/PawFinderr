@@ -69,6 +69,7 @@ kotlin {
             implementation(libs.kotlin.test)
         }
         iosMain.dependencies {
+            implementation("io.ktor:ktor-client-darwin:2.3.12")
             implementation("app.cash.sqldelight:native-driver:2.0.2")
         }
     }

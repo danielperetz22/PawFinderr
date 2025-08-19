@@ -24,4 +24,3 @@ class MyApp : Application() {
         MediaManager.init(this, config)
     }
 }
-

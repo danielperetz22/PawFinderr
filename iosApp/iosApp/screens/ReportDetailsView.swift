@@ -2,11 +2,15 @@ import SwiftUI
 import MapKit
 import CoreLocation
 import Shared
+import FirebaseAuth
+import FirebaseFirestore
 
 struct ReportDetailsView: View {
     let report: ReportModel
+    var currentUserId: String? = nil
     var onEdit: () -> Void = {}
     var onDelete: () -> Void = {}
+    
 
     @State private var current: ReportModel
     @State private var showEdit = false
@@ -17,8 +21,22 @@ struct ReportDetailsView: View {
     @State private var savingError: String?
     @State private var isMapLoaded = false
 
-    init(report: ReportModel, onEdit: @escaping () -> Void = {}, onDelete: @escaping () -> Void = {}) {
+    // Fallback for current user id on iOS
+    @State private var me: String? = nil
+
+    // delete
+    @Environment(\.dismiss) private var dismiss
+    @State private var isDeleting = false
+    
+    
+    init(
+        report: ReportModel,
+        currentUserId: String? = nil,
+        onEdit: @escaping () -> Void = {},
+        onDelete: @escaping () -> Void = {}
+    ) {
         self.report = report
+        self.currentUserId = currentUserId
         self.onEdit  = onEdit
         self.onDelete = onDelete
         _current = State(initialValue: report)
@@ -61,9 +79,11 @@ struct ReportDetailsView: View {
                         .cornerRadius(8)
                     }
 
+
                     Text(current.isLost ? "lost!" : "found!")
                         .font(.custom("BalooBhaijaan2-Bold", size: 28))
                         .foregroundColor(Color.darkGreen)
+
 
                     LabeledInline(title: "description :", value: current.description_)
                     LabeledInline(title: "contact me :", value: current.phone.isEmpty ? "—" : current.phone)
@@ -116,6 +136,7 @@ struct ReportDetailsView: View {
                             
                             if !isMapLoaded {
                                 ProgressView()
+
                             }
                         }
                         .frame(height: 200)
@@ -125,53 +146,73 @@ struct ReportDetailsView: View {
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color.white)
                             .frame(height: 140)
-                            .overlay(Text("No location available")
-                                .font(.custom("BalooBhaijaan2-Medium", size: 16))
-                                .foregroundColor(.secondary))
+                            .overlay(
+                                Text("No location available")
+                                    .font(.custom("BalooBhaijaan2-Medium", size: 16))
+                                    .foregroundColor(.secondary)
+                            )
                     }
 
-                    Spacer().frame(height: 104)
+                    // ----- Bottom owner-only action icons (NOT sticky) -----
+                    if isOwner {
+                        HStack {
+                            Button {
+                                showDeleteConfirm = true
+                            } label: {
+                                Image(systemName: "trash")
+                                    .font(.system(size: 22, weight: .semibold))
+                                    .foregroundColor(.red)
+                                    .padding(8)
+                            }
+
+
+                            Spacer()
+
+                            Button {
+                                showEdit = true
+                                onEdit()
+                            } label: {
+                                Image(systemName: "pencil")
+                                    .font(.system(size: 22, weight: .semibold))
+                                    .foregroundColor(Color("DarkGray"))
+                                    .padding(8)
+                            }
+                        }
+                        .padding(.vertical, 12)
+                    }
+
+                    // Room above any tab bar
+                    Spacer().frame(height: 32)
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 16)
             }
-
-            VStack(spacing: 8) {
-                Spacer()
-
-                Button {
-                    showEdit = true
-                    onEdit()
-                } label: {
-                    Text("Edit")
-                        .font(.custom("BalooBhaijaan2-Bold", size: 16))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity, minHeight: 48)
-                        .background(Color("PrimaryPink"))
-                        .cornerRadius(8)
-                }
-
-                Button(role: .destructive) {
-                    showDeleteConfirm = true
-                } label: {
-                    Text("Delete")
-                        .font(.custom("BalooBhaijaan2-Bold", size: 16))
-                        .frame(maxWidth: .infinity, minHeight: 48)
-                        .foregroundColor(.red)
-                        .background(Color.clear)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.red, lineWidth: 1)
-                        )
-                }
-            }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 16)
         }
         .navigationTitle("Report Details")
         .navigationBarTitleDisplayMode(.inline)
         .alert("Delete report?", isPresented: $showDeleteConfirm) {
-            Button("Delete", role: .destructive) { onDelete() }
+            Button("Delete", role: .destructive) {
+                guard isOwner else { return }
+                guard !current.id.isEmpty else {
+                    savingError = "Missing report id."
+                    return
+                }
+                isDeleting = true
+                Task {
+                    do {
+                        try await Firestore.firestore()
+                            .collection("reports")
+                            .document(current.id)
+                            .delete()
+                        isDeleting = false
+                        onDelete()   // let parent refresh if it wants
+                        dismiss()    // pop details screen
+                    } catch {
+                        isDeleting = false
+                        savingError = "Failed to delete: \(error.localizedDescription)"
+                    }
+                }
+            }
             Button("Cancel", role: .cancel) { }
         } message: {
             Text("This action cannot be undone.")
@@ -194,7 +235,7 @@ struct ReportDetailsView: View {
                     phone:      phone,
                     imageUrl:   imageUrl ?? current.imageUrl,
                     isLost:     isLost,
-                    location:   current.location,
+
                     lat:        newLat,
                     lng:        newLng,
                     createdAt:  current.createdAt
@@ -205,19 +246,35 @@ struct ReportDetailsView: View {
             }
         }
         .task {
+            // populate fallback uid once
+            if me == nil {
+                me = Auth.auth().currentUser?.uid
+                // Debug (optional):
+                // print("owner:", current.userId, "me:", me ?? "nil", "passed:", currentUserId ?? "nil")
+            }
             if let lat = safeLat, let lng = safeLng {
                 await reverseGeocode(lat: lat, lng: lng)
             }
         }
     }
 
+
+    // MARK: - Helpers
     private var safeLat: Double? {
         let lat = current.lat
         return lat.isNaN ? nil : lat
     }
+
     private var safeLng: Double? {
         let lng = current.lng
         return lng.isNaN ? nil : lng
+    }
+
+    // Show buttons only if this user owns it
+    private var isOwner: Bool {
+        let meId   = (currentUserId ?? me ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let owner  = current.userId.trimmingCharacters(in: .whitespacesAndNewlines)
+        return !meId.isEmpty && meId == owner
     }
 
     private func region(for lat: Double, _ lng: Double) -> MKCoordinateRegion {
@@ -239,7 +296,8 @@ struct ReportDetailsView: View {
             let placemarks = try await geocoder.reverseGeocodeLocation(location)
             if let pm = placemarks.first {
                 let parts = [pm.name, pm.thoroughfare, pm.subThoroughfare, pm.locality, pm.administrativeArea, pm.country]
-                self.addressText = parts.compactMap { $0 }
+                self.addressText = parts
+                    .compactMap { $0 }
                     .map { $0.trimmingCharacters(in: .whitespaces) }
                     .filter { !$0.isEmpty }
                     .joined(separator: ", ")
@@ -251,6 +309,8 @@ struct ReportDetailsView: View {
         }
     }
 }
+
+// MARK: - Inline label
 
 private struct LabeledInline: View {
     let title: String
@@ -269,6 +329,4 @@ private struct LabeledInline: View {
     }
 }
 
-extension Notification.Name {
-    static let reportsDidChange = Notification.Name("reportsDidChange")
-}
+

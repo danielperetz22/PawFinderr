@@ -226,7 +226,6 @@ class MainActivity : ComponentActivity() {
                                     phone = phone,
                                     imageUrl = imageUrl,
                                     isLost = isLost,
-                                    location = null,
                                     lat = lat,
                                     lng=lng
                                 )

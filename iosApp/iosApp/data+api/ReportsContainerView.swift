@@ -16,7 +16,6 @@ struct ReportsContainerView: View {
           phone:       phone,
           imageUrl:    imageUrl,
           isLost:      isLost,
-          location: nil,
           lat: lat,
           lng: lng
         )

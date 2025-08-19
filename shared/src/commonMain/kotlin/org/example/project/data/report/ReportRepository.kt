@@ -8,7 +8,6 @@ interface ReportRepository {
         phone: String,
         imageUrl: String,
         isLost: Boolean,
-        location: String? = null,
         lat: Double,
         lng: Double
     )
@@ -24,7 +23,6 @@ interface ReportRepository {
         phone: String? = null,
         imageUrl: String? = null,
         isLost: Boolean? = null,
-        location: String? = null,
         lat: Double? =null,
         lng: Double?=null
     )

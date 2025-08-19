@@ -11,6 +11,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,6 +33,7 @@ import coil3.compose.SubcomposeAsyncImage
 import coil3.compose.SubcomposeAsyncImageContent
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.auth.FirebaseAuth
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
@@ -57,6 +60,7 @@ private val PrimaryPink = Color(0xFFFFC0C0)
 private val LabelGray   = Color(0xFF8D8D8D)
 private val CardStroke  = Color(0xFFD6D6D6)
 
+
 @Composable
 fun ReportDetailsScreen(
     report: ReportModel,
@@ -70,7 +74,9 @@ fun ReportDetailsScreen(
             .padding(horizontal = 24.dp, vertical = 16.dp),
     ) {
         val scroll = rememberScrollState()
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
 
+        // --- SCROLLABLE CONTENT ---
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -137,10 +143,6 @@ fun ReportDetailsScreen(
             if (lat != null && lng != null) {
                 AddressBlock(lat = lat, lng = lng, modifier = Modifier.padding(top = 4.dp))
 
-                report.location?.takeIf { it.isNotBlank() }?.let { note ->
-                    Spacer(Modifier.height(6.dp))
-                    InlineLabel(label = "location note :", value = note)
-                }
 
                 val spot = LatLng(lat, lng)
                 val cameraState = rememberCameraPositionState {
@@ -196,9 +198,7 @@ fun ReportDetailsScreen(
                             context.startActivity(Intent(Intent.ACTION_VIEW, gmm))
                         }
                     }
-                ) {
-                    Text("Open in Google Maps")
-                }
+                ) { Text("Open in Google Maps") }
             } else {
                 Box(
                     modifier = Modifier
@@ -238,23 +238,34 @@ fun ReportDetailsScreen(
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
             }
+            // --- BOTTOM ACTION BUTTONS (scroll with page) ---
+            if (currentUserId != null && report.userId == currentUserId) {
+                Spacer(Modifier.height(24.dp))
 
-            OutlinedButton(
-                onClick = onDelete,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(14.dp),
-                border = ButtonDefaults.outlinedButtonBorder,
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error
-                )
-            ) {
-                Text("Delete", style = MaterialTheme.typography.titleMedium)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = onDelete, modifier = Modifier.size(48.dp)) {
+                        Icon(
+                            Icons.Outlined.Delete,
+                            contentDescription = "Delete",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                    IconButton(onClick = onEdit, modifier = Modifier.size(48.dp)) {
+                        Icon(Icons.Outlined.Edit, contentDescription = "Edit", tint = LabelGray)
+                    }
+                }
             }
         }
     }
 }
+
+
 
 @Composable
 fun InlineLabel(label: String, value: String, modifier: Modifier = Modifier) {
